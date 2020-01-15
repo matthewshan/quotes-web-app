@@ -21,6 +21,7 @@ namespace CustardQuotes.Controllers
         [HttpGet]
         public ActionResult Get()
         {
+            //Return ok
             return Ok();
         }
     }
