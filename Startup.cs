@@ -12,6 +12,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
+using CustardQuotes.Models;
+using Microsoft.EntityFrameworkCore;
 namespace CustardQuotes
 {
     public class Startup
@@ -26,6 +28,10 @@ namespace CustardQuotes
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<CustardQuotesContext>(
+                option => option.UseSqlServer(Configuration["Data:APIConnection:ConnectionString"])
+            );
+
             services.AddControllers();
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
