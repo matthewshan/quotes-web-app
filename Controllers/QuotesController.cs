@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using CustardQuotes.Models;
 using CustardQuotes.Filters;
+using Microsoft.EntityFrameworkCore;
 
 namespace CustardQuotes.Controllers
 {
@@ -32,11 +33,56 @@ namespace CustardQuotes.Controllers
             return _context.CustardQuotes.ToList();
         }
 
-        [HttpGet("Person/{name}")]
+        [HttpGet("{name}")]
         public ActionResult<List<CustardQuotesModel>> Get(String name)
         {
-            
             return _context.CustardQuotes.Where(quote => quote.Person == name).ToList();
+        }
+
+        [HttpGet("names")]
+        public ActionResult<List<string>> GetNames()
+        {
+            return _context.CustardQuotes.Select(quote => quote.Person).Distinct().ToList();
+        }
+
+        [HttpPost("new")]
+        public ActionResult<CustardQuotesModel> Add([FromBody] CustardQuotesModel newQuote)
+        {
+            _context.CustardQuotes.Add(newQuote);
+            _context.SaveChanges();
+
+            return CreatedAtAction("{name}", new CustardQuotesModel { Id = newQuote.Id }, newQuote);
+        }
+
+        [HttpPut("Person/merge")]
+        public ActionResult MergeNames([FromBody] List<string> oldNames, string newName)
+        {
+            oldNames.ForEach(name =>
+            {
+                var nameList = _context.CustardQuotes.Where(quote => quote.Person == name).ToList();
+                nameList.ForEach(quote =>
+                {
+                    quote.Person = newName;
+                    _context.Entry(quote).State = EntityState.Modified;
+                });
+            });
+            _context.SaveChanges();
+            return Ok();
+        }
+
+        [HttpDelete("delete")]
+        public ActionResult<CustardQuotesModel> Delete(int id)
+        {
+            var result = _context.CustardQuotes.Find(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            _context.CustardQuotes.Remove(result);
+            _context.SaveChanges();
+
+            return result;
         }
     }
 }

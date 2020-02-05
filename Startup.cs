@@ -11,8 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore;
 
 using CustardQuotes.Models;
+using CustardQuotes.Filters;
 using Microsoft.EntityFrameworkCore;
 namespace CustardQuotes
 {
@@ -34,11 +36,12 @@ namespace CustardQuotes
 
             services.AddControllers();
             // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(config =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Custard Quotes API", Version = "v1" });
+                config.SwaggerDoc("v1", new OpenApiInfo { Title = "Custard Quotes API", Version = "v1" });
+                config.OperationFilter<ApiKeyAuthAttribute>();
             });
-        }
+        }                                            
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
