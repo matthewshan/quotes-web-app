@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using CustardQuotes.Models;
+using CustardQuotes.Filters;
 
 namespace CustardQuotes.Controllers
 {
     [ApiController]
+    [ApiKeyAuth]
     [Route("[controller]")]
     public class QuotesController : ControllerBase
     {

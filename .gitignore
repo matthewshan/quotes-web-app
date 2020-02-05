@@ -3,3 +3,4 @@ obj/
 appsettings.json
 Controllers/WeatherController.cs
 Models/WeatherModel.cs
+.vs/
