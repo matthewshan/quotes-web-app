@@ -27,34 +27,41 @@ namespace CustardQuotes.Controllers
 
         //https://www.learnentityframeworkcore.com/dbset/querying-data
 
-        [HttpGet]
+        [HttpGet("all")]
         public ActionResult<List<CustardQuotesModel>> Get()
         {
             return _context.CustardQuotes.ToList();
         }
 
-        [HttpGet("{name}")]
+        [HttpGet("byName")]
         public ActionResult<List<CustardQuotesModel>> Get(String name)
         {
-            return _context.CustardQuotes.Where(quote => quote.Person == name).ToList();
+            return _context.CustardQuotes.Where(quote => quote.Person == name).OrderBy(quote => quote.DateAdded).ToList();
         }
 
-        [HttpGet("names")]
+        [HttpGet("byId")]
+        public ActionResult<CustardQuotesModel> Get(int id)
+        {
+            return _context.CustardQuotes.Where(quote => quote.Id == id).OrderBy(quote => quote.DateAdded).ToList()[0];
+        }
+
+        [HttpGet("allNames")]
         public ActionResult<List<string>> GetNames()
         {
             return _context.CustardQuotes.Select(quote => quote.Person).Distinct().ToList();
         }
 
         [HttpPost("new")]
-        public ActionResult<CustardQuotesModel> Add([FromBody] CustardQuotesModel newQuote)
+        public ActionResult Add([FromBody] CustardQuotesModel newQuote)
         {
+            //https://stackoverflow.com/questions/10013313/why-is-sql-server-throwing-this-error-cannot-insert-the-value-null-into-column
             _context.CustardQuotes.Add(newQuote);
             _context.SaveChanges();
 
-            return CreatedAtAction("{name}", new CustardQuotesModel { Id = newQuote.Id }, newQuote);
+            return Ok();
         }
 
-        [HttpPut("Person/merge")]
+        [HttpPut("merge")]
         public ActionResult MergeNames([FromBody] List<string> oldNames, string newName)
         {
             oldNames.ForEach(name =>

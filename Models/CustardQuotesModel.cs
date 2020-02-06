@@ -7,6 +7,7 @@ namespace CustardQuotes.Models
 {
     public partial class CustardQuotesModel
     {
+        [Key]
         public int Id { get; set; }
         public string Quote { get; set; }
         public string Person { get; set; }

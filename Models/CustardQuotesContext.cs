@@ -16,11 +16,18 @@ namespace CustardQuotes.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder
+                .HasAnnotation("ProductVersion", "3.1.1")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
             modelBuilder.Entity<CustardQuotesModel>(entity =>
             {
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
-                    .ValueGeneratedNever();
+                     .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
 
                 entity.Property(e => e.Author)
                     .HasMaxLength(30)
@@ -41,6 +48,8 @@ namespace CustardQuotes.Models
                 entity.Property(e => e.Source)
                     .HasMaxLength(30)
                     .IsUnicode(false);
+
+                entity.HasKey("Id");
             });
 
             OnModelCreatingPartial(modelBuilder);

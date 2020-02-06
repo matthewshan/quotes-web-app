@@ -1,7 +1,7 @@
 DROP TABLE custard_quotes;
 
 CREATE TABLE CustardQuotes (
-   ID int NOT NULL,
+   ID int IDENTITY(1,1) NOT NULL,
    Quote VARCHAR(2000) NOT NULL,
    Person VARCHAR(30) NOT NULL,
    Author VARCHAR(30),
