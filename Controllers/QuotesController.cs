@@ -25,8 +25,6 @@ namespace CustardQuotes.Controllers
             _context = context;
         }
 
-        //https://www.learnentityframeworkcore.com/dbset/querying-data
-
         [HttpGet("all")]
         public ActionResult<List<CustardQuotesModel>> Get()
         {
@@ -54,7 +52,6 @@ namespace CustardQuotes.Controllers
         [HttpPost("new")]
         public ActionResult Add([FromBody] CustardQuotesModel newQuote)
         {
-            //https://stackoverflow.com/questions/10013313/why-is-sql-server-throwing-this-error-cannot-insert-the-value-null-into-column
             _context.CustardQuotes.Add(newQuote);
             _context.SaveChanges();
 
