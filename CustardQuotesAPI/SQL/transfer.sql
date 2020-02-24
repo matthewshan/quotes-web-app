@@ -1,4 +1,4 @@
-DROP TABLE custard_quotes;
+DROP TABLE CustardQuotes;
 
 CREATE TABLE CustardQuotes (
    ID int IDENTITY(1,1) NOT NULL,
@@ -12,4 +12,5 @@ CREATE TABLE CustardQuotes (
 
 INSERT INTO dbo.CustardQuotes (ID, Quote, Person, Author, DateAdded, Source)
     SELECT ID, Quote, Person, Author, DateAdded, Source
-    FROM dbo.quotes;
+    FROM dbo.quotes
+	ORDER by DateAdded;
