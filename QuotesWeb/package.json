@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "build": "cd quote-book && npm run build",
+    "prod": "npm run build && node index.js",
+    "dev": "node index.js dev & (cd quote-book && npm run start)"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1"
   }
 }
