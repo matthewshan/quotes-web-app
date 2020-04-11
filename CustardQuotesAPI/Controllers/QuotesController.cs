@@ -25,6 +25,12 @@ namespace CustardQuotes.Controllers
             _context = context;
         }
 
+        [HttpHead]
+        public ActionResult Ping()
+        {
+            return Ok();
+        }
+
         [HttpGet("all")]
         public ActionResult<List<CustardQuotesModel>> Get()
         {
