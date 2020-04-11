@@ -38,51 +38,65 @@ namespace CustardQuotes.Controllers
         }
 
         [HttpGet("byGroup")]
-        public ActionResult<List<CustardQuotesModel>> Get(int GroupID)
+        public ActionResult<List<CustardQuotesModel>> Get(int groupID)
         {
-            return _context.CustardQuotes.Where(quote => quote.GroupId == GroupID).OrderBy(quote => quote.DateAdded).ToList();
+            return _context.CustardQuotes.Where(quote => quote.GroupId == groupID).OrderBy(quote => quote.DateAdded).ToList();
         }
 
         [HttpGet("byName")]
-        public ActionResult<List<CustardQuotesModel>> Get(String name)
+        public ActionResult<List<CustardQuotesModel>> Get(String name, int groupID)
         {
-            return _context.CustardQuotes.Where(quote => quote.Person == name).OrderBy(quote => quote.DateAdded).ToList();
+            return _context.CustardQuotes.Where(quote => quote.Person == name && quote.GroupId == groupID).OrderBy(quote => quote.DateAdded).ToList();
         }
 
         [HttpGet("byId")]
-        public ActionResult<CustardQuotesModel> GetByGroup(int id)
+        public ActionResult<CustardQuotesModel> GetByID(int id)
         {
             return _context.CustardQuotes.Where(quote => quote.Id == id).OrderBy(quote => quote.DateAdded).ToList()[0];
         }
 
         [HttpGet("allNames")]
-        public ActionResult<List<string>> GetNames()
+        public ActionResult<List<string>> GetNames(int groupID)
         {
-            return _context.CustardQuotes.Select(quote => quote.Person).Distinct().ToList();
+            return _context.CustardQuotes.Where(quote => quote.GroupId == groupID).Select(quote => quote.Person).Distinct().ToList();
         }
 
         [HttpPost("new")]
         public ActionResult Add([FromBody] CustardQuotesModel newQuote)
         {
             _context.CustardQuotes.Add(newQuote);
-            _context.SaveChanges(); //TODO: Check if change is allowed
+            try 
+            { 
+                _context.SaveChanges(); //TODO: Check if change is allowed
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
 
             return Ok();
         }
 
         [HttpPut("merge")]
-        public ActionResult MergeNames([FromBody] List<string> oldNames, string newName)
+        public ActionResult MergeNames([FromBody] List<string> oldNames, string newName, int groupId)
         {
             oldNames.ForEach(name =>
             {
-                var nameList = _context.CustardQuotes.Where(quote => quote.Person == name).ToList();
+                var nameList = _context.CustardQuotes.Where(quote => quote.Person == name && quote.GroupId == groupId).ToList();
                 nameList.ForEach(quote =>
                 {
                     quote.Person = newName;
                     _context.Entry(quote).State = EntityState.Modified;
                 });
             });
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch(Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
             return Ok();
         }
 
@@ -96,7 +110,13 @@ namespace CustardQuotes.Controllers
             }
 
             _context.CustardQuotes.Remove(result);
-            _context.SaveChanges();
+            try { 
+                _context.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
 
             return result;
         }
