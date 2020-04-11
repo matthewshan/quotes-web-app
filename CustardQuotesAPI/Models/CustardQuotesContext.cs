@@ -12,6 +12,7 @@ namespace CustardQuotes.Models
         {
         }
         public virtual DbSet<CustardQuotesModel> CustardQuotes { get; set; }
+        public virtual DbSet<GroupsModel> Groups { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -48,8 +49,31 @@ namespace CustardQuotes.Models
                 entity.Property(e => e.Source)
                     .HasMaxLength(30)
                     .IsUnicode(false);
-
                 entity.HasKey("Id");
+            });
+
+            modelBuilder.Entity<GroupsModel>(entity =>
+            {
+                entity.HasKey(e => e.GroupId)
+                    .HasName("PK_Group");
+
+                entity.Property(e => e.GroupId)
+                    .HasColumnName("GroupID")
+                    .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn); ;
+
+                entity.Property(e => e.Name)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Owner)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.DiscordServer)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
             });
 
             OnModelCreatingPartial(modelBuilder);

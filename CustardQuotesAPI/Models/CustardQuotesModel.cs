@@ -14,5 +14,6 @@ namespace CustardQuotes.Models
         public string Author { get; set; }
         public DateTime? DateAdded { get; set; }
         public string Source { get; set; }
+        public int? GroupId { get; set; }
     }
 }

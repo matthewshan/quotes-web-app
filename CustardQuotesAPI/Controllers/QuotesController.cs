@@ -31,6 +31,12 @@ namespace CustardQuotes.Controllers
             return _context.CustardQuotes.ToList();
         }
 
+        [HttpGet("byGroup")]
+        public ActionResult<List<CustardQuotesModel>> Get(int GroupID)
+        {
+            return _context.CustardQuotes.Where(quote => quote.GroupId == GroupID).OrderBy(quote => quote.DateAdded).ToList();
+        }
+
         [HttpGet("byName")]
         public ActionResult<List<CustardQuotesModel>> Get(String name)
         {
@@ -38,7 +44,7 @@ namespace CustardQuotes.Controllers
         }
 
         [HttpGet("byId")]
-        public ActionResult<CustardQuotesModel> Get(int id)
+        public ActionResult<CustardQuotesModel> GetByGroup(int id)
         {
             return _context.CustardQuotes.Where(quote => quote.Id == id).OrderBy(quote => quote.DateAdded).ToList()[0];
         }
@@ -53,7 +59,7 @@ namespace CustardQuotes.Controllers
         public ActionResult Add([FromBody] CustardQuotesModel newQuote)
         {
             _context.CustardQuotes.Add(newQuote);
-            _context.SaveChanges();
+            _context.SaveChanges(); //TODO: Check if change is allowed
 
             return Ok();
         }
