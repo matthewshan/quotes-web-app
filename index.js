@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, 'quote-book/build')));
 
 // An api endpoint that returns a short list of items
 app.get('/api/getQuotes', (req,res) => {
-    if(req.headers.host.split(':')[0] == 'localhost') {
+    if(req.headers.host.split(':')[0] == 'localhost' || req.headers.host.split(':')[0] == 'https://quotes-book.herokuapp.com/') {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(
             [{"Quote": "Testing 123", "Person": "John Doe", "DateAdded": "Yesterday"}]
