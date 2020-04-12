@@ -7,13 +7,14 @@
     "packages": "npm install & (cd quote-book && npm install)",
     "build": "npm run packages && (cd quote-book && npm run build)",
     "start": "node index.js",
-    "dev": "node index.js dev & (cd quote-book && npm run start)"
+    "dev": "nodemon index.js dev & (cd quote-book && npm run start)"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "nodemon": "^2.0.3"
   }
 }

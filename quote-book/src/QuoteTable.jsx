@@ -1,6 +1,6 @@
 import React from 'react';
 
-const apiURL = 'http://localhost:5000'
+const apiURL = ''
 
 function QuoteItem({quote}) {
     return <tr>
@@ -42,8 +42,6 @@ export default function QuoteTable() {
           setQuotesList(payload);
         });
     };
-
-    getQuotes()
     
     React.useEffect(() => getQuotes(), []);
 
