@@ -4,15 +4,15 @@ const apiURL = ''
 
 function QuoteItem({quote}) {
     return <tr>
-        <td>{quote.Quote}</td>
-        <td>{quote.Person}</td>
-        <td>{quote.DateAdded}</td>
+        <td>{quote.quote}</td>
+        <td>{quote.person}</td>
+        <td>{quote.dateAdded}</td>
     </tr>;
 }
 
 function QuotesTable({quotes}) {
     console.log(quotes)
-    return <div className="table-responsive text-left col-lg-8 border p-4 ">
+    return <div className="table-responsive text-left col-lg-12 border p-4 ">
         <h1>Quotes</h1>
         <table className="table table-striped table-sm">
             <thead>
@@ -37,7 +37,9 @@ export default function QuoteTable() {
 
     let getQuotes = () => {
         fetch(`${apiURL}/api/getQuotes`).then(response => {
-            return response.json();
+            let result = response.json()
+            console.log('Result: ' + result);
+            return result;
         }).then(payload => {    
           setQuotesList(payload);
         });

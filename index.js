@@ -1,14 +1,26 @@
 const express = require('express');
 const path = require('path');
-var cors = require('cors');
+const cors = require('cors');
+const needle = require('needle')
+
+
 
 const app = express();
 
-if(process.argv[2] == 'dev') {
-    //TODO: Enable CORS here when in dev mode
+const APIKey = process.env.API_KEY
+
+let apiBaseUrl = 'https://custardquotesapi.azurewebsites.net'
+
+process.env.IS_DEV = process.argv[2] == 'dev'
+
+if(process.env.IS_DEV) {
     app.use(cors({
-        origin: 'http://localhost:3000'
+        origin: 'https://localhost:3000'
       }));
+}
+
+let isValid = function refer(value) {
+    return (value == 'http://localhost:5000/' || value == 'http://localhost:3000/' || value == 'https://quotes-book.herokuapp.com/')
 }
 
 // Serve the static files from the React app
@@ -16,14 +28,29 @@ app.use(express.static(path.join(__dirname, 'quote-book/build')));
 
 // An api endpoint that returns a short list of items
 app.get('/api/getQuotes', (req,res) => {
-    if(req.headers.host.split(':')[0] == 'localhost' || req.headers.host.split(':')[0] == 'https://quotes-book.herokuapp.com/') {
+    if(isValid(req.get('referer'))) {
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(
-            [{"Quote": "Testing 123", "Person": "John Doe", "DateAdded": "Yesterday"}]
-        ));
+        
+        const options = {
+            headers: {
+                ApiKey: APIKey
+            }
+        }
+
+        const params = {
+            groupID: 3
+        }
+        
+        needle.request('get', `${apiBaseUrl}/Quotes/byGroup`, params, options, (error, response) => {
+            if (!error && response.statusCode == 200)
+                res.send(response.body);
+            else   
+                console.log(error + " ||| " + response.statusCode)
+        })
+
     }
     else {
-        res.send(401,"Access Denied From: "+req.headers.host);
+        res.send(401,"Access Denied From");
     }
 });
 
