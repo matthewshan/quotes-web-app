@@ -10,14 +10,14 @@ const APIKey = process.env.API_KEY
 const API_ENDPOINT = 'https://discordapp.com/api/v6';
 const DISCORD_CLIENTID = process.env.DISCORD_CLIENTID
 const DISCORD_SECRET = process.env.DISCORD_SECRET
-let REDIRECT_URI = encodeURIComponent('https://quotes-book.herokuapp.com/api/discord/login')
+let REDIRECT_URI = 'https://quotes-book.herokuapp.com/api/discord/login/'
 
 let apiBaseUrl = 'https://custardquotesapi.azurewebsites.net'
 
 
 if(process.env.IS_DEV) {
     console.log("Starting in development mode. Make sure this is not running for production")
-    REDIRECT_URI = encodeURIComponent('http://localhost:5000/api/discord/login')
+    REDIRECT_URI = 'http://localhost:5000/api/discord/login'
     app.use(cors({
         origin: 'http://localhost:3000'
     }));
@@ -65,30 +65,26 @@ app.get('/login', (req, res) => {
 app.get('/api/discord/login', (req, res) => {
     console.log("Attemping to log in...")
     if (!req.query.code) throw new Error('NoCodeProvided');
-    const creds = Buffer.from(`${DISCORD_CLIENTID}:${DISCORD_SECRET}`).toString('base64');
     const options = {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: `Basic ${creds}`
         }
     }
 
-    // console.log(creds);
-    const data = {
-        params: {
-            client_id: DISCORD_CLIENTID,
-            client_secret: DISCORD_SECRET,
-            grant_type: 'authorization_code',
-            code: req.query.code,
-            redirect_uri: REDIRECT_URI,
-            scope: 'identify%20email%20guilds'
-        }
+    console.log(req.query.code);
+    data = {
+        client_id: DISCORD_CLIENTID,
+        client_secret: DISCORD_SECRET,
+        grant_type: 'authorization_code',
+        code: req.query.code,
+        redirect_uri: REDIRECT_URI,
+        scope: 'identify email guilds'
     }
 
     needle.post(`https://discordapp.com/api/v6/oauth2/token`, data, options, (error, response) => {
         console.log(response.body)
         if (!error && response.statusCode == 200)
-            res.redirect(`/api/discord/auth?token=${response.body.code}`)
+            res.redirect(`/api/discord/auth?token=${response.body.access_token}`)
         else   
             console.log(error + " ||| " + response.statusCode)
     });
