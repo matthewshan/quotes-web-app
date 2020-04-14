@@ -3,8 +3,6 @@ const path = require('path');
 const cors = require('cors');
 const needle = require('needle')
 
-
-
 const app = express();
 
 const APIKey = process.env.API_KEY
