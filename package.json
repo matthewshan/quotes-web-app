@@ -7,7 +7,7 @@
     "packages": "npm install & (cd quote-book && npm install)",
     "build": "npm run packages && (cd quote-book && npm run build)",
     "start": "node index.js",
-    "dev": "(cd quote-book && npm run start) & nodemon dev.js dev"
+    "dev": "(cd quote-book && npm run start) & nodemon dev.js"
   },
   "keywords": [],
   "author": "",

@@ -2,24 +2,29 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const needle = require('needle')
+const crypto = require('crypto')
 
 const app = express();
 
 const APIKey = process.env.API_KEY
+const API_ENDPOINT = 'https://discordapp.com/api/v6';
+const DISCORD_CLIENTID = process.env.DISCORD_CLIENTID
+const DISCORD_SECRET = process.env.DISCORD_SECRET
+let REDIRECT_URI = encodeURIComponent('https://quotes-book.herokuapp.com/api/discord/login')
 
 let apiBaseUrl = 'https://custardquotesapi.azurewebsites.net'
 
-process.env.IS_DEV = process.argv[2] == 'dev'
 
 if(process.env.IS_DEV) {
+    console.log("Starting in development mode. Make sure this is not running for production")
+    REDIRECT_URI = encodeURIComponent('http://localhost:5000/api/discord/login')
     app.use(cors({
-        origin: 'https://localhost:3000'
-      }));
+        origin: 'http://localhost:3000'
+    }));
 }
 
-let isValid = function refer(value) {
-    return (value == 'http://localhost:5000/' || value == 'http://localhost:3000/' || value == 'https://quotes-book.herokuapp.com/')
-}
+let isValid = () => (value == 'http://localhost:5000/' || value == 'http://localhost:3000/' || value == 'https://quotes-book.herokuapp.com/')
+
 
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, 'quote-book/build')));
@@ -52,6 +57,36 @@ app.get('/api/getQuotes', (req,res) => {
     }
 });
 
+app.get('/login', (req, res) => {
+    console.log("Logging in with discord")
+    res.redirect(`https://discordapp.com/api/oauth2/authorize?client_id=${DISCORD_CLIENTID}&scope=identify%20email&response_type=code&redirect_uri=${REDIRECT_URI}`);
+});
+
+app.get('/api/discord/login', (req, res) => {
+    if (!req.query.code) throw new Error('NoCodeProvided');
+    const creds = Buffer.from(`${DISCORD_CLIENTID}:${DISCORD_SECRET}`).toString('base64');
+    const options = {
+        headers: {
+            Authorization: `Basic ${creds}`,
+        }
+    }
+
+    console.log(creds);
+    const params = {
+        grant_type: 'authorization_code',
+        code: req.query.code,
+        redirect_uri: REDIRECT_URI
+    }
+
+    needle.request('POST', `https://discordapp.com/api/oauth2/token`, params, options, (error, response) => {
+        console.log(response.body);
+        if (!error && response.statusCode == 200)
+            res.send(response.body);
+        else   
+            console.log(error + " ||| " + response.statusCode)
+    })
+});
+
 // Handles any requests that don't match the ones above
 app.get('*', (req,res) =>{
     res.sendFile(path.join(__dirname+'/quote-book/build/index.html'));
@@ -61,3 +96,6 @@ const port = process.env.PORT || 5000;
 app.listen(port);
 
 console.log('App is listening on port ' + port);
+
+
+///var id = crypto.randomBytes(20).toString('hex');
