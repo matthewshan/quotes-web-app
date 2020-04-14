@@ -3,19 +3,29 @@ const path = require('path');
 const cors = require('cors');
 const needle = require('needle')
 const crypto = require('crypto')
+const session = require('express-session')
 
 const app = express();
+// app.use(express.static(path.join(__dirname, 'quote-book/build')));
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true
+}));
 
-const APIKey = process.env.API_KEY
-const API_ENDPOINT = 'https://discordapp.com/api/v6';
+
+const DISCORD_API = 'https://discordapp.com/api/v6';
 const DISCORD_CLIENTID = process.env.DISCORD_CLIENTID
 const DISCORD_SECRET = process.env.DISCORD_SECRET
 let REDIRECT_URI = 'https://quotes-book.herokuapp.com/api/discord/login/'
 
-let apiBaseUrl = 'https://custardquotesapi.azurewebsites.net'
+const QUOTES_API = 'https://custardquotesapi.azurewebsites.net'
+const APIKey = process.env.API_KEY
 
+let isSecure = true
 
 if(process.env.IS_DEV) {
+    isSecure = false
     console.log("Starting in development mode. Make sure this is not running for production")
     REDIRECT_URI = 'http://localhost:5000/api/discord/login'
     app.use(cors({
@@ -23,14 +33,52 @@ if(process.env.IS_DEV) {
     }));
 }
 
-let isValid = () => (value == 'http://localhost:5000/' || value == 'http://localhost:3000/' || value == 'https://quotes-book.herokuapp.com/')
+let isValid = (value) => (value == 'http://localhost:5000/' || value == 'http://localhost:3000/' || value == 'https://quotes-book.herokuapp.com/')
 
 
-// Serve the static files from the React app
-app.use(express.static(path.join(__dirname, 'quote-book/build')));
+function discordToken(req, refresh=false) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }
+
+        let params = {
+            client_id: DISCORD_CLIENTID,
+            client_secret: DISCORD_SECRET,            
+            redirect_uri: REDIRECT_URI,
+            scope: 'identify email guilds'
+        }
+
+        if(!refresh) {
+            params['grant_type'] = 'authorization_code'
+            params['code'] = req.query.code
+        }
+        else {
+            params.grant_type = 'refresh_token'
+            params.refresh_token = '' //TODO
+        }
+
+        needle.post(`https://discordapp.com/api/v6/oauth2/token`, params, options, (error, response) => {
+            console.log(response.body)
+            if (!error && response.statusCode == 200) {
+                resolve(response)
+            }
+            else   
+                reject(error + " ||| " + response.statusCode)
+        });
+    });
+}
+
+// Discord functions
+function discordUser() {
+    needle.get(`${DISCORD_API}/users/@me`)
+}
+
 
 // An api endpoint that returns a short list of items
-app.get('/api/getQuotes', (req,res) => {
+app.get('/api/getQuotes', (req, res) => {
     if(isValid(req.get('referer'))) {
         res.setHeader('Content-Type', 'application/json');
         
@@ -44,9 +92,9 @@ app.get('/api/getQuotes', (req,res) => {
             groupID: 3
         }
         
-        needle.request('get', `${apiBaseUrl}/Quotes/byGroup`, params, options, (error, response) => {
+        needle.request('get', `${QUOTES_API}/Quotes/byGroup`, params, options, (error, response) => {
             if (!error && response.statusCode == 200)
-                res.send(response.body); //TODO THE REASON WHY ITS NOT WORKING IS BECAUSE YOU NEED TO REDIRECT
+                res.send(response.body);
             else   
                 console.log(error + " ||| " + response.statusCode)
         })
@@ -57,51 +105,46 @@ app.get('/api/getQuotes', (req,res) => {
     }
 });
 
+// Login route
 app.get('/login', (req, res) => {
     console.log("Logging in with discord")
     res.redirect(`https://discordapp.com/api/oauth2/authorize?client_id=${DISCORD_CLIENTID}&scope=identify%20email%20guilds&response_type=code&redirect_uri=${REDIRECT_URI}`);
 });
 
+//Discord Login Callback
 app.get('/api/discord/login', (req, res) => {
     console.log("Attemping to log in...")
     if (!req.query.code) throw new Error('NoCodeProvided');
-    const options = {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    }
-
-    console.log(req.query.code);
-    data = {
-        client_id: DISCORD_CLIENTID,
-        client_secret: DISCORD_SECRET,
-        grant_type: 'authorization_code',
-        code: req.query.code,
-        redirect_uri: REDIRECT_URI,
-        scope: 'identify email guilds'
-    }
-
-    needle.post(`https://discordapp.com/api/v6/oauth2/token`, data, options, (error, response) => {
-        console.log(response.body)
-        if (!error && response.statusCode == 200)
-            res.redirect(`/api/discord/auth?token=${response.body.access_token}`)
-        else   
-            console.log(error + " ||| " + response.statusCode)
-    });
-});
-
-app.get('/api/discord/auth', (req, res) => {
-    res.send(req.body)
+    discordToken(req)
+    .then((response) => {
+        req.session.token = response.body.access_token
+        req.session.refresh_token = response.body.refresh_token
+        req.session.expires = new Date().getTime()/1000 + response.body.expires_in
+        console.log("User logged in")
+        res.redirect("/")
+    }).catch((err) => {
+        console.log(err)
+    })
+    
 });
 
 // Handles any requests that don't match the ones above
 app.get('*', (req,res) =>{
-    res.sendFile(path.join(__dirname+'/quote-book/build/index.html'));
+    console.log("Static File Requested")
+    console.log(req.session.token)
+    if(!req.session.token) {
+        console.log("User must login first")
+        res.redirect('/login')
+    }
+    else {
+        console.log("Sending Static File")
+        res.sendFile(path.join(__dirname+'/quote-book/build/index.html'));
+    }
+    console.log("======")
 });
 
 const port = process.env.PORT || 5000;
 app.listen(port);
-
 console.log('App is listening on port ' + port);
 
 
