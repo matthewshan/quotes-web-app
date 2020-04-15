@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <title> Quotes Book </title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                    sans-serif;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                background-color: #2C2F33;
+                color: white;
+            }
+            a {
+                color: white;
+                font-size: 2rem;
+            }
+            /* button {
+                padding: 1em;
+            } */
+
+            #loginBox {
+                margin: auto;
+            }
+
+            #discordButton {
+                background-color: #7289DA;
+                border: 2px #99AAB5 solid;
+                border-radius: 20px;
+                display: inline-block;
+                background-image: url('https://discordapp.com/assets/1c8a54f25d101bdc607cec7228247a9a.svg');
+                background-repeat: no-repeat;
+                background-position: 0px 0px;     
+                background-size: 7rem;
+                width: 30rem;
+                height: 7rem;        
+            }
+            
+            button:hover#discordButton  {
+                cursor: pointer; 
+            }
+            
+
+            #discordButton a {
+                text-decoration: none;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                    sans-serif;
+                margin-left: 7rem;
+            }
+
+            #discordButton a:hover {
+                text-decoration: none;
+            }
+
+            #loginBox {
+                position: absolute;
+                top: 0; bottom: 0; left: 0; right: 0;
+                text-align: center;
+                width: 30rem;
+                height: 10rem;
+                margin: auto;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="loginBox">
+            <button id="discordButton">
+                <div>
+                    <a href="/login/discord">Login with Discord</a>
+                </div>
+            </button>
+        </div>
+    </body>
+
+</html>

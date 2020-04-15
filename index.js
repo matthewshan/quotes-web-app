@@ -15,12 +15,12 @@ const app = express();
 const DISCORD_API = 'https://discordapp.com/api/v6';
 const DISCORD_CLIENTID = process.env.DISCORD_CLIENTID
 const DISCORD_SECRET = process.env.DISCORD_SECRET
-let REDIRECT_URI = 'https://quotes-book.herokuapp.com/login/discord'
+let REDIRECT_URI = 'https://quotes-book.herokuapp.com/login/discord/callback'
 const QUOTES_API = 'https://custardquotesapi.azurewebsites.net'
 const APIKey = process.env.API_KEY
 if(process.env.IS_DEV) {
     console.log("Starting in development mode. Make sure this is not running for production")
-    REDIRECT_URI = 'http://localhost:5000/login/discord'
+    REDIRECT_URI = 'http://localhost:5000/login/discord/callback'
     app.use(cors({
         origin: 'http://localhost:3000'
     }));
@@ -147,16 +147,17 @@ app.get('/api/getQuotes', apiCall, (req, res) => {
 /***
  * LOGIN ROUTES
  */
-app.get('/login', redirectHome, (req, res) => {
+
+app.get('/login', redirectHome, (req, res) =>{
+    res.sendFile(path.join(__dirname+'/login.html'))
+})
+app.get('/login/discord', redirectHome, (req, res) => {
     console.log("Logging in with discord");
     res.redirect(`https://discordapp.com/api/oauth2/authorize?client_id=${DISCORD_CLIENTID}&scope=identify%20email%20guilds&response_type=code&redirect_uri=${REDIRECT_URI}`);
 });
 
-app.get('/login/discord', redirectHome, (req, res) => {
+app.get('/login/discord/callback', redirectHome, (req, res) => {
     console.log("Attemping to log in...")
-    if (!req.query.code) {
-        res.redirect("/");
-    };
     discordGetToken(req)
     .then((response) => {
         req.session.token = response.body.access_token;
@@ -172,7 +173,7 @@ app.get('/login/discord', redirectHome, (req, res) => {
 });
 
 /***
- * STACI FILES
+ * STATIC FILES
  */
 app.get('*', redirectLogin, (req,res) =>{
     res.sendFile(path.join(__dirname+'/quote-book/build'+req.path));    
