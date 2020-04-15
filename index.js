@@ -3,8 +3,9 @@ const path = require('path');
 const cors = require('cors');
 const needle = require('needle')
 const crypto = require('crypto')
+
 const session = require('express-session')
-var FileStore = require('session-file-store')(session)
+var MemcachedStore = require('connect-memjs')(session);
 const app = express();
 
 
@@ -30,7 +31,10 @@ if(process.env.IS_DEV) {
  * Middleware
  */
 app.use(session({
-    store: new FileStore({ttl: 7200}),
+    store: new MemcachedStore({
+        servers: [process.env.MEMCACHIER_SERVERS],
+        prefix: '_session_'
+      }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
