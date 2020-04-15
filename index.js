@@ -4,6 +4,7 @@ const cors = require('cors');
 const needle = require('needle')
 const crypto = require('crypto')
 const session = require('express-session')
+var FileStore = require('session-file-store')(session)
 const app = express();
 
 
@@ -29,6 +30,7 @@ if(process.env.IS_DEV) {
  * Middleware
  */
 app.use(session({
+    store: new FileStore({ttl: 7200}),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
