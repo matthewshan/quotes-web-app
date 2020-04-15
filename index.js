@@ -6,12 +6,38 @@ const crypto = require('crypto')
 const session = require('express-session')
 
 const app = express();
-// app.use(express.static(path.join(__dirname, 'quote-book/build')));
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true
+    resave: false,
+    saveUninitialized: false,
+    cookie : {
+        secure: !process.env.IS_DEV,
+        maxAge: 1000*60*60*24*7
+    }
 }));
+// app.use(express.static(path.join(__dirname, 'quote-book/build')));
+
+const redirectLogin = (req, res, next) => {
+    let token = req.session.token
+    if(!token) {
+        console.log(req.path + ":" + req.session.token)
+        res.redirect('/login')
+    }
+    else {
+        console.log(req.session.token)
+        next();
+    }
+}
+
+const redirectHome = (req, res, next) => {
+    if(req.session.token) {
+        res.redirect('/')
+    }
+    else {
+        next();
+    }
+}
 
 
 const DISCORD_API = 'https://discordapp.com/api/v6';
@@ -57,7 +83,7 @@ function discordToken(req, refresh=false) {
         }
         else {
             params.grant_type = 'refresh_token'
-            params.refresh_token = '' //TODO
+            params.refresh_token = req.session.refresh_token
         }
 
         needle.post(`https://discordapp.com/api/v6/oauth2/token`, params, options, (error, response) => {
@@ -106,13 +132,13 @@ app.get('/api/getQuotes', (req, res) => {
 });
 
 // Login route
-app.get('/login', (req, res) => {
+app.get('/login', redirectHome, (req, res) => {
     console.log("Logging in with discord")
     res.redirect(`https://discordapp.com/api/oauth2/authorize?client_id=${DISCORD_CLIENTID}&scope=identify%20email%20guilds&response_type=code&redirect_uri=${REDIRECT_URI}`);
 });
 
 //Discord Login Callback
-app.get('/api/discord/login', (req, res) => {
+app.get('/api/discord/login', redirectHome, (req, res) => {
     console.log("Attemping to log in...")
     if (!req.query.code) throw new Error('NoCodeProvided');
     discordToken(req)
@@ -120,6 +146,7 @@ app.get('/api/discord/login', (req, res) => {
         req.session.token = response.body.access_token
         req.session.refresh_token = response.body.refresh_token
         req.session.expires = new Date().getTime()/1000 + response.body.expires_in
+        req.session.save()
         console.log("User logged in")
         res.redirect("/")
     }).catch((err) => {
@@ -129,18 +156,8 @@ app.get('/api/discord/login', (req, res) => {
 });
 
 // Handles any requests that don't match the ones above
-app.get('*', (req,res) =>{
-    console.log("Static File Requested")
-    console.log(req.session.token)
-    if(!req.session.token) {
-        console.log("User must login first")
-        res.redirect('/login')
-    }
-    else {
-        console.log("Sending Static File")
-        res.sendFile(path.join(__dirname+'/quote-book/build/index.html'));
-    }
-    console.log("======")
+app.get('*', redirectLogin, (req,res) =>{
+    res.sendFile(path.join(__dirname+'/quote-book/build'+req.path));    
 });
 
 const port = process.env.PORT || 5000;
