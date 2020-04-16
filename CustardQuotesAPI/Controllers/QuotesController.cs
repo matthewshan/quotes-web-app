@@ -32,42 +32,43 @@ namespace CustardQuotes.Controllers
         }
 
         [HttpGet("all")]
-        public ActionResult<List<CustardQuotesModel>> Get()
+        public async Task<ActionResult<List<CustardQuotesModel>>> Get()
         {
-            return _context.CustardQuotes.ToList();
+            return await _context.CustardQuotes.ToListAsync();
         }
 
         [HttpGet("byGroup")]
-        public ActionResult<List<CustardQuotesModel>> Get(int groupID)
+        public async Task<ActionResult<List<CustardQuotesModel>>> Get(int groupID)
         {
-            return _context.CustardQuotes.Where(quote => quote.GroupId == groupID).OrderBy(quote => quote.DateAdded).ToList();
+            return await _context.CustardQuotes.Where(quote => quote.GroupId == groupID).OrderBy(quote => quote.DateAdded).ToListAsync();
         }
 
         [HttpGet("byName")]
-        public ActionResult<List<CustardQuotesModel>> Get(String name, int groupID)
+        public async Task<ActionResult<List<CustardQuotesModel>>> Get(String name, int groupID)
         {
-            return _context.CustardQuotes.Where(quote => quote.Person == name && quote.GroupId == groupID).OrderBy(quote => quote.DateAdded).ToList();
+            return await _context.CustardQuotes.Where(quote => quote.Person == name && quote.GroupId == groupID).OrderBy(quote => quote.DateAdded).ToListAsync();
         }
 
         [HttpGet("byId")]
-        public ActionResult<CustardQuotesModel> GetByID(int id)
+        public async Task<ActionResult<CustardQuotesModel>> GetByID(int id)
         {
-            return _context.CustardQuotes.Where(quote => quote.Id == id).OrderBy(quote => quote.DateAdded).ToList()[0];
+            var result = await _context.CustardQuotes.Where(quote => quote.Id == id).OrderBy(quote => quote.DateAdded).ToListAsync();
+            return result[0];
         }
 
         [HttpGet("allNames")]
-        public ActionResult<List<string>> GetNames(int groupID)
+        public async Task<ActionResult<List<string>>> GetNames(int groupID)
         {
-            return _context.CustardQuotes.Where(quote => quote.GroupId == groupID).Select(quote => quote.Person).Distinct().ToList();
+            return await _context.CustardQuotes.Where(quote => quote.GroupId == groupID).Select(quote => quote.Person).Distinct().ToListAsync();
         }
 
         [HttpPost("new")]
-        public ActionResult Add([FromBody] CustardQuotesModel newQuote)
+        public async Task<ActionResult> Add([FromBody] CustardQuotesModel newQuote)
         {
-            _context.CustardQuotes.Add(newQuote);
+            await _context.CustardQuotes.AddAsync(newQuote);
             try 
-            { 
-                _context.SaveChanges(); //TODO: Check if change is allowed
+            {
+                await _context.SaveChangesAsync(); //TODO: Check if change is allowed
             }
             catch (Exception e)
             {
@@ -78,7 +79,7 @@ namespace CustardQuotes.Controllers
         }
 
         [HttpPut("merge")]
-        public ActionResult MergeNames([FromBody] List<string> oldNames, string newName, int groupId)
+        public async Task<ActionResult> MergeNames([FromBody] List<string> oldNames, string newName, int groupId)
         {
             oldNames.ForEach(name =>
             {
@@ -101,9 +102,9 @@ namespace CustardQuotes.Controllers
         }
 
         [HttpDelete("delete")]
-        public ActionResult<CustardQuotesModel> Delete(int id)
+        public async Task<ActionResult<CustardQuotesModel>> Delete(int id)
         {
-            var result = _context.CustardQuotes.Find(id);
+            var result = await _context.CustardQuotes.FindAsync(id);
             if (result == null)
             {
                 return NotFound();
@@ -111,7 +112,7 @@ namespace CustardQuotes.Controllers
 
             _context.CustardQuotes.Remove(result);
             try { 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {

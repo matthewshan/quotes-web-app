@@ -10,7 +10,7 @@ using CustardQuotes.Filters;
 
 namespace CustardQuotes.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiKeyAuth]
     [ApiController]
     public class GroupsController : ControllerBase

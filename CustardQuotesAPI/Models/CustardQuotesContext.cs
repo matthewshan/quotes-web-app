@@ -14,7 +14,9 @@ namespace CustardQuotes.Models
         public virtual DbSet<CustardQuotesModel> CustardQuotes { get; set; }
         public virtual DbSet<GroupsModel> Groups { get; set; }
 
+        public virtual DbSet<UserGroupsModel> UserGroups { get; set; }
 
+        public virtual DbSet<UsersModel> Users { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
@@ -75,6 +77,9 @@ namespace CustardQuotes.Models
                     .HasMaxLength(50)
                     .IsUnicode(false);
             });
+
+            modelBuilder.Entity<UserGroupsModel>().ToTable("UserGroups").HasKey(c => new { c.UserId, c.GroupId});
+            modelBuilder.Entity<UsersModel>().ToTable("Users");
 
             OnModelCreatingPartial(modelBuilder);
         }

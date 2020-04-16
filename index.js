@@ -40,7 +40,7 @@ app.use(session({
     saveUninitialized: false,
     cookie : {
         secure: !process.env.IS_DEV,
-        maxAge: 1000*60*60*24*7
+        maxAge: 1000*60*60*1*1 //MS*S*M*H*D
     }
 }));
 
@@ -114,8 +114,45 @@ function discordGetToken(req, refresh=false) {
     });
 }
 
-function discordGetUser() {
-    needle.get(`${DISCORD_API}/users/@me`);
+function discordGetUser(token) {
+    return new Promise((resolve, reject) => {
+        options = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    
+        needle.request('get', `${DISCORD_API}/users/@me`, null, options, (error, response) => {
+            if(!error && response.statusCode == 200) {
+                console.log('Inside request: ' + response.body)
+                resolve(response.body);
+            }
+            else {
+                reject();
+            }
+        });
+
+    });    
+}
+
+function discordGetUserServers(token) {
+    return new Promise((resolve, reject)=>{
+        options = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+        needle.request('get', `${DISCORD_API}/users/@me/guilds`, null, options, (error, response) => {
+            if(!error && response.statusCode == 200) {
+                let servers = response.body.map((server) => server.id)
+                resolve(servers);
+            }
+            else {
+                reject();
+            }
+        });
+    })
 }
 
 
@@ -124,7 +161,6 @@ function discordGetUser() {
  */
 app.get('/api/getQuotes', apiCall, (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    
     const options = {
         headers: {
             ApiKey: APIKey
@@ -163,9 +199,16 @@ app.get('/login/discord/callback', redirectHome, (req, res) => {
         req.session.token = response.body.access_token;
         req.session.refresh_token = response.body.refresh_token;
         req.session.expires = new Date().getTime()/1000 + response.body.expires_in;
-        //req.session.save();
-        console.log("User logged in");
-        res.redirect("/");
+        discordGetUser(req.session.token).then((userInfo) => {
+            req.session.email = userInfo.email;
+            req.session.discord_id = userInfo.id;
+            console.log('id: ' + userInfo.id)
+            discordGetUserServers(req.session.token).then((servers) =>{
+                req.session.servers = servers;
+                console.log(req.session.servers)
+            })
+            res.redirect("/");
+        })
     }).catch((err) => {
         console.log(err);
     })
