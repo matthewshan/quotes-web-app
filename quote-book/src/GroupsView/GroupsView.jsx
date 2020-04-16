@@ -1,0 +1,43 @@
+import React from 'react';
+import './GroupsView.css'
+
+function GroupItem({id, name}) {
+    return <option value={id}>{name}</option>
+}
+
+function GroupsView() {
+
+    let [groupsList, setGroupsList] = React.useState([{id: 1, name: "Bowser's Big Bean Burrito"}]); 
+
+    // let getGroups = () => {
+    //     fetch(`${apiURL}/api/getGroups`).then(response => {
+    //         let result = response.json()
+    //         console.log('Result: ' + result);
+    //         return result;
+    //     }).then(payload => {    
+    //       setGroupsList(payload);
+    //     });
+    // };
+    
+    // React.useEffect(() => getGroups(), []);
+
+    function onSelect(event) {
+        let group = event.target.value;
+        if (group != "---") {
+            window.location.replace(`/${group}`);
+        }
+    }
+
+    return <div className="container card m-auto w-75 w-sm-25 py-4">
+                <h2>Select a Group</h2>
+                <select className="" onChange={onSelect}>
+                    <option value="---">---</option>
+                    {
+                        groupsList.map((item, i) => <GroupItem key={i} id={item.id} name={item.name}/>)
+                    }
+                </select>
+                <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"> + Create New Group</a>
+            </div>
+}
+
+export default GroupsView;
