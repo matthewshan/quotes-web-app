@@ -212,14 +212,25 @@ app.get('/login/discord/callback', redirectHome, (req, res) => {
     }).catch((err) => {
         console.log(err);
     })
-    
+});
+
+app.get('/logout', redirectLogin, (req, res) => {
+    req.session.destroy();
+    res.redirect("/login");
 });
 
 /***
  * STATIC FILES
  */
+app.get('/notebook/:groupId', redirectLogin, (req,res) =>{
+    console.log(req.path)
+    // let path = req.path;
+    // req.path;
+    res.sendFile(path.join(__dirname, '/quote-book/build/'));    
+});
+
 app.get('*', redirectLogin, (req,res) =>{
-    res.sendFile(path.join(__dirname+'/quote-book/build'+req.path));    
+    res.sendFile(path.join(__dirname, '/quote-book/build', req.path));    
 });
 
 const port = process.env.PORT || 5000;

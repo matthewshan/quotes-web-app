@@ -5,7 +5,7 @@ function GroupItem({id, name}) {
     return <option value={id}>{name}</option>
 }
 
-function GroupsView() {
+function GroupsView({user}) {
 
     let [groupsList, setGroupsList] = React.useState([{id: 1, name: "Bowser's Big Bean Burrito"}]); 
 
@@ -24,11 +24,11 @@ function GroupsView() {
     function onSelect(event) {
         let group = event.target.value;
         if (group != "---") {
-            window.location.replace(`/${group}`);
+            window.location.replace(`/notebook/${group}`);
         }
     }
 
-    return <div className="container card m-auto w-75 w-sm-25 py-4">
+    return <div id="groupsView" className="container card m-auto w-75 w-sm-25 py-4">
                 <h2>Select a Group</h2>
                 <select className="" onChange={onSelect}>
                     <option value="---">---</option>

@@ -1,10 +1,10 @@
-div {
+div#groupsView {
     width: 30%;
     top: 12vw;
 }
 
 @media only screen and (max-width: 600px) {
-    div {
+    div#groupsView {
         width: 90%;
     }
 }

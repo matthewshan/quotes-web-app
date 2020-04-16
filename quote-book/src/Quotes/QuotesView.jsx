@@ -11,7 +11,7 @@ const apiURL = ''
 //     </tr>;
 // }
 
-function QuoteView() {
+function QuoteView({user}) {
 
     let [quotesList, setQuotesList] = React.useState([]); 
 

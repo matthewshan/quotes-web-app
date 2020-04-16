@@ -20,7 +20,7 @@ function App() {
   // };
   
   // React.useEffect(() => getUser(), []);
-  return (
+  return (<div>   
     <BrowserRouter>
       <Switch>
         <Route path="/">
@@ -29,10 +29,11 @@ function App() {
         </Route>
         <Route path="/notebook/:groupId"> 
           <Nav user={user}/>
-          <QuotesView /> 
+          <QuotesView />
         </Route> 
       </Switch>
     </BrowserRouter>
+    </div>
   );
 }
 
