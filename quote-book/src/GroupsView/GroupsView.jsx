@@ -7,7 +7,7 @@ function GroupItem({id, name}) {
 
 function GroupsView({user}) {
 
-    let [groupsList, setGroupsList] = React.useState([{id: 1, name: "Bowser's Big Bean Burrito"}]); 
+    let [groupsList, setGroupsList] = React.useState([{id: 3, name: "Bowser's Big Bean Burrito"}]); 
 
     // let getGroups = () => {
     //     fetch(`${apiURL}/api/getGroups`).then(response => {
