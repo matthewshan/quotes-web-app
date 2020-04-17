@@ -15,11 +15,12 @@ const DISCORD_API = 'https://discordapp.com/api/v6';
 const DISCORD_CLIENTID = process.env.DISCORD_CLIENTID
 const DISCORD_SECRET = process.env.DISCORD_SECRET
 let REDIRECT_URI = 'https://quotes-book.herokuapp.com/login/discord/callback'
-const QUOTES_API = 'https://custardquotesapi.azurewebsites.net'
+let QUOTES_API = 'https://custardquotesapi.azurewebsites.net'
 const APIKey = process.env.API_KEY
 if(process.env.IS_DEV) {
     console.log("Starting in development mode. Make sure this is not running for production")
     REDIRECT_URI = 'http://localhost:5000/login/discord/callback'
+    // QUOTES_API = 'https://localhost:44395'
     app.use(cors({
         origin: 'http://localhost:3000'
     }));
@@ -161,6 +162,28 @@ function discordGetUserServers(token) {
 /***
  * QUOTES API
  */
+app.get('/api/getUser', apiCall, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+
+    const options = {
+        headers: {
+            ApiKey: APIKey
+        }
+    }
+
+    const params = {
+        email: req.session.email
+    }
+    
+    needle.request('put', `${QUOTES_API}/Users/discord/${req.session.discord_id}`, params, options, (error, response) => {
+        console.log(response)
+        if (!error && response.statusCode == 200)
+            res.send(response.body);
+        else   
+            console.log("Failed to retrieve group");
+    })
+});
+
 app.get('/api/getQuotes', apiCall, (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     
@@ -181,6 +204,8 @@ app.get('/api/getQuotes', apiCall, (req, res) => {
             console.log("Failed to retrieve group");
     })
 });
+
+
 
 
 /***

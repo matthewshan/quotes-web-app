@@ -61,7 +61,7 @@ namespace CustardQuotes.Controllers
         }
 
         [HttpPut("discord/{discordId}")]
-        public async Task<ActionResult<string>> RequestUserDiscord(string discordId, string email)
+        public async Task<ActionResult<UsersModel>> RequestUserDiscord(string discordId, string email)
         {
             List<UsersModel> result = await _context.Users.Where(user => user.DiscordId == discordId).ToListAsync();
 
@@ -74,18 +74,17 @@ namespace CustardQuotes.Controllers
             //Creates new user if does not exists
             if (result.Count == 0)
             {
-                UsersModel temp = await CreateUser(user);
-                return temp.Id;
+                return await CreateUser(user);
             }
             // Updates the user if any information was updated
             else if(!result[0].Equals(user))
             {
                 user.Id = result[0].Id;
                 await UpdateUser(user);
-                return user.Id;
+                return user;
             }
             // If things are the same, don't change anything. Just return the userID
-            return result[0].Id;          
+            return result[0];          
         }
 
         [HttpGet("{id}")]

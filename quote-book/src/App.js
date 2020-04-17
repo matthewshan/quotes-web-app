@@ -11,20 +11,20 @@ import Nav from './Nav/NavBar';
 import { BrowserRouter, Router, Route, Switch, useRouteMatch } from 'react-router-dom'
 
 function App() {
-  let [user, setUser] = React.useState({id: 0, email: "johndoe@gmail.com", discordId: "", facebookId: ""}); 
+  let [user, setUser] = React.useState({id: "", email: "", discordId: "", facebookId: ""}); 
 
-  // let getUser = () => {
-  //     fetch(`/api/getCurrentUser`).then(response => {
-  //         let result = response.json()
-  //         return result;
-  //     }).then(payload => {    
-  //       setUser(payload);
-  //     });
-  // };
-  
-  // React.useEffect(() => getUser(), []);
+  let getUser = () => {
+      fetch(`/api/getUser`).then(response => {
+          let result = response.body
+          return result;
+      }).then(payload => {    
+        console.log(payload)
+        setUser(payload);
+      });
+  };
+  React.useEffect(() => getUser(), []);
+
   return (<div>   
-    
       <Switch>
         <Route exact path="/">
           <Nav user={user}/>
