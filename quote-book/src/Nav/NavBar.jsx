@@ -1,12 +1,16 @@
 import React from 'react';
 
+function logout(event) {
+    window.location.replace('/logout')
+}
+
 function NavBar({user}) {
     return <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <a className="navbar-brand" href="/">QuoteBook Assistant</a>
-        <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span className="navbar-toggler-icon"></span>
+        <button onClick={logout} className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            Logout
         </button>
-        <div className="collapse navbar-collapse justify-content-md-end" id="navbarCollapse">
+        <div className="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Logout of <span className="text-white">{user.email}</span></a>

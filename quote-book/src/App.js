@@ -1,7 +1,10 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import $ from 'jquery';
+import Popper from 'popper.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
 import QuotesView from './Quotes/QuotesView';
 import GroupsView from './GroupsView/GroupsView';
 import Nav from './Nav/NavBar';
@@ -21,9 +24,9 @@ function App() {
   
   // React.useEffect(() => getUser(), []);
   return (<div>   
-    <BrowserRouter>
+    
       <Switch>
-        <Route path="/">
+        <Route exact path="/">
           <Nav user={user}/>
           <GroupsView />
         </Route>
@@ -32,7 +35,6 @@ function App() {
           <QuotesView />
         </Route> 
       </Switch>
-    </BrowserRouter>
     </div>
   );
 }

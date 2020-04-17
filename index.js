@@ -8,7 +8,6 @@ const session = require('express-session')
 var MemcachedStore = require('connect-memjs')(session);
 const app = express();
 
-
 /***
  * Important Variables
  */
@@ -30,6 +29,9 @@ if(process.env.IS_DEV) {
 /***
  * Middleware
  */
+
+//  // Serve the static files from the React app
+// app.use(express.static(path.join(__dirname, '/quote-book/build')));
 app.use(session({
     store: new MemcachedStore({
         servers: [process.env.MEMCACHIER_SERVERS],
@@ -44,7 +46,7 @@ app.use(session({
     }
 }));
 
-let isValid = (value) => (value == 'http://localhost:5000/' || value == 'http://localhost:3000/' || value == 'https://quotes-book.herokuapp.com/')
+let isValid = (value) => (/(http:\/\/localhost:5000\/|https:\/\/quotes-book\.herokuapp\.com\/|http:\/\/localhost:3000\/)($|(notebook\/\d+))/.test(value))
 const apiCall = (req, res, next) => {
     if(!isValid(req.get('referer'))) {
         res.send(401,"Access Denied From");
@@ -161,6 +163,7 @@ function discordGetUserServers(token) {
  */
 app.get('/api/getQuotes', apiCall, (req, res) => {
     res.setHeader('Content-Type', 'application/json');
+    
     const options = {
         headers: {
             ApiKey: APIKey
@@ -168,14 +171,14 @@ app.get('/api/getQuotes', apiCall, (req, res) => {
     }
 
     const params = {
-        groupID: 3
+        groupID: req.param('groupId')
     }
     
     needle.request('get', `${QUOTES_API}/Quotes/byGroup`, params, options, (error, response) => {
         if (!error && response.statusCode == 200)
             res.send(response.body);
         else   
-            console.log(error + " ||| " + response.statusCode);
+            console.log("Failed to retrieve group");
     })
 });
 
@@ -216,21 +219,18 @@ app.get('/login/discord/callback', redirectHome, (req, res) => {
 
 app.get('/logout', redirectLogin, (req, res) => {
     req.session.destroy();
+    req.session = null;
     res.redirect("/login");
 });
 
 /***
  * STATIC FILES
  */
-app.get('/notebook/:groupId', redirectLogin, (req,res) =>{
-    console.log(req.path)
-    // let path = req.path;
-    // req.path;
-    res.sendFile(path.join(__dirname, '/quote-book/build/'));    
-});
-
-app.get('*', redirectLogin, (req,res) =>{
-    res.sendFile(path.join(__dirname, '/quote-book/build', req.path));    
+app.get('/*', redirectLogin, (req,res) =>{
+    if(req.path == "" || /\/notebook\/\d/.test(req.path))
+        res.sendFile(path.join(__dirname, '/quote-book/build/index.html'));    
+    else
+        res.sendFile(path.join(__dirname, '/quote-book/build/' + req.path));
 });
 
 const port = process.env.PORT || 5000;

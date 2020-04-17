@@ -1,6 +1,7 @@
 import React from 'react';
 import QuoteCard from './QuoteCard';
 import styles from './quotes.css';
+import { useRouteMatch } from 'react-router-dom'
 const apiURL = ''
 
 // function QuoteItem({quote}) {
@@ -12,11 +13,11 @@ const apiURL = ''
 // }
 
 function QuoteView({user}) {
-
+    let match = useRouteMatch()
     let [quotesList, setQuotesList] = React.useState([]); 
 
     let getQuotes = () => {
-        fetch(`${apiURL}/api/getQuotes`).then(response => {
+        fetch(`${apiURL}/api/getQuotes?groupId=${match.params.groupId}`).then(response => {
             let result = response.json()
             console.log('Result: ' + result);
             return result;
@@ -27,7 +28,7 @@ function QuoteView({user}) {
     
     React.useEffect(() => getQuotes(), []);
 
-    return <div className="container bg-3 text-center">
+    return <div className="container bg-3 text-center" style={{marginTop: '40px'}}>
             <div className="row">
                 {quotesList.map((quote, i) => (
                     <QuoteCard key={i} quote={quote} />

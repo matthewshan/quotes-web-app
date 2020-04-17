@@ -28,7 +28,7 @@ function GroupsView({user}) {
         }
     }
 
-    return <div id="groupsView" className="container card m-auto w-75 w-sm-25 py-4">
+    return <div id="groupsView" className="container card m-auto w-75 w-sm-25 py-4" style={{marginTop: '40px'}}>
                 <h2>Select a Group</h2>
                 <select className="" onChange={onSelect}>
                     <option value="---">---</option>
