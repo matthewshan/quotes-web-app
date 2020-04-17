@@ -7,11 +7,7 @@ function GroupItem({id, name}) {
 
 function GroupsView({user}) {
 
-<<<<<<< HEAD
-    let [groupsList, setGroupsList] = React.useState([{id: 3, name: "Generic Group"}]); 
-=======
     let [groupsList, setGroupsList] = React.useState([{id: 3, name: "Bowser's Big Bean Burrito"}]); 
->>>>>>> 418e814997857504247539fab2afa6a8d7cea2c5
 
     // let getGroups = () => {
     //     fetch(`${apiURL}/api/getGroups`).then(response => {
