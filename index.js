@@ -20,7 +20,7 @@ const APIKey = process.env.API_KEY
 if(process.env.IS_DEV) {
     console.log("Starting in development mode. Make sure this is not running for production")
     REDIRECT_URI = 'http://localhost:5000/login/discord/callback'
-    // QUOTES_API = 'https://localhost:44395'
+    QUOTES_API = 'http://localhost:32855'
     app.use(cors({
         origin: 'http://localhost:3000'
     }));
@@ -30,9 +30,6 @@ if(process.env.IS_DEV) {
 /***
  * Middleware
  */
-
-//  // Serve the static files from the React app
-// app.use(express.static(path.join(__dirname, '/quote-book/build')));
 app.use(session({
     store: new MemcachedStore({
         servers: [process.env.MEMCACHIER_SERVERS],
@@ -64,7 +61,7 @@ const redirectLogin = (req, res, next) => {
         res.redirect('/login');
     }
     else {
-        console.log(req.session.token)
+        // console.log(req.session.token)
         next();
     }
 }
@@ -107,7 +104,7 @@ function discordGetToken(req, refresh=false) {
         }
 
         needle.post(`https://discordapp.com/api/v6/oauth2/token`, params, options, (error, response) => {
-            console.log(response.body)
+            console.log(response)
             if (!error && response.statusCode == 200) {
                 resolve(response);
             }
@@ -127,7 +124,7 @@ function discordGetUser(token) {
     
         needle.request('get', `${DISCORD_API}/users/@me`, null, options, (error, response) => {
             if(!error && response.statusCode == 200) {
-                console.log('Inside request: ' + response.body)
+                // console.log('Inside request: ' + response.body)
                 resolve(response.body);
             }
             else {
@@ -170,17 +167,15 @@ app.get('/api/getUser', apiCall, (req, res) => {
             ApiKey: APIKey
         }
     }
-
-    const params = {
-        email: req.session.email
-    }
     
-    needle.request('put', `${QUOTES_API}/Users/discord/${req.session.discord_id}`, params, options, (error, response) => {
-        console.log(response)
-        if (!error && response.statusCode == 200)
+    needle.put(`${QUOTES_API}/Users/discord/${req.session.discord_id}?email=${req.session.email}`, null, options, (error, response) => {
+        if (!error && response.statusCode == 200) {
+            console.log(response.body.id);
+            req.session.userId = response.body.id;
             res.send(response.body);
+        }
         else   
-            console.log("Failed to retrieve group");
+            console.log(response.statusCode + "Failed to retrieve user...");
     })
 });
 
@@ -203,6 +198,42 @@ app.get('/api/getQuotes', apiCall, (req, res) => {
         else   
             console.log("Failed to retrieve group");
     })
+});
+
+app.get('/api/addDiscordGroups', apiCall, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    
+    const options = {
+        headers: {
+            ApiKey: APIKey
+        }
+    }
+
+    //204 on success
+    needle.request('put', `${QUOTES_API}​/Groups​/discord​/${req.session.user_id}`, req.session.servers, options, (error, response) => {
+        if (!error)
+            res.sendStatus(response.statusCode);
+        else   
+            console.log("Failed to retrieve group");
+    });
+});
+
+app.get('/api/userGroups', apiCall, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    
+    const options = {
+        headers: {
+            ApiKey: APIKey
+        }
+    }
+
+    //200 Ok 
+    needle.request('get', `${QUOTES_API}​/Groups​/UserGroups​/${req.session.user_id}`, null, options, (error, response) => {
+        if (!error && response.statusCode == 200)
+            res.send(response.body);
+        else   
+            console.log("Failed to retrieve group");
+    });
 });
 
 
@@ -228,12 +259,13 @@ app.get('/login/discord/callback', redirectHome, (req, res) => {
         req.session.refresh_token = response.body.refresh_token;
         req.session.expires = new Date().getTime()/1000 + response.body.expires_in;
         discordGetUser(req.session.token).then((userInfo) => {
+            // console.log(userInfo.email)
             req.session.email = userInfo.email;
             req.session.discord_id = userInfo.id;
-            console.log('id: ' + userInfo.id)
+            // console.log('id: ' + userInfo.id)
             discordGetUserServers(req.session.token).then((servers) =>{
                 req.session.servers = servers;
-                console.log(req.session.servers)
+                // console.log(req.session.servers)
             })
             res.redirect("/");
         })

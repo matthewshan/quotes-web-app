@@ -40,7 +40,7 @@ namespace CustardQuotes.Controllers
         [HttpGet("byGroup")]
         public async Task<ActionResult<List<CustardQuotesModel>>> Get(int groupID)
         {
-            return await _context.CustardQuotes.Where(quote => quote.GroupId == groupID).OrderBy(quote => quote.DateAdded).ToListAsync();
+            return await _context.CustardQuotes.Where(quote => quote.GroupId == groupID).OrderByDescending(quote => quote.DateAdded).ToListAsync();
         }
 
         [HttpGet("byName")]

@@ -7,19 +7,21 @@ function GroupItem({id, name}) {
 
 function GroupsView({user}) {
 
-    let [groupsList, setGroupsList] = React.useState([{id: 3, name: "Bowser's Big Bean Burrito"}]); 
+    let [groupsList, setGroupsList] = React.useState([{}]); 
 
-    // let getGroups = () => {
-    //     fetch(`${apiURL}/api/getGroups`).then(response => {
-    //         let result = response.json()
-    //         console.log('Result: ' + result);
-    //         return result;
-    //     }).then(payload => {    
-    //       setGroupsList(payload);
-    //     });
-    // };
+    let getGroups = () => {
+        fetch(`/api/addDiscordGroups`).then(response => {
+            fetch(`/api/userGroups`).then(response => {
+                let result = response.json()
+                console.log('Result: ' + result);
+                return result;
+            }).then(payload => {    
+              setGroupsList(payload);
+            });
+        });
+    };
     
-    // React.useEffect(() => getGroups(), []);
+    React.useEffect(() => getGroups(), []);
 
     function onSelect(event) {
         let group = event.target.value;

@@ -22,25 +22,49 @@ namespace CustardQuotes.Controllers
             _context = context;
         }
 
-        // GET: api/Groups
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<GroupsModel>>> GetGroups()
+        private async Task AddUserToGroup(string userId, int groupId)
         {
-            return await _context.Groups.ToListAsync();
+            UserGroupsModel entry = new UserGroupsModel
+            {
+                UserId = userId,
+                GroupId = groupId
+            };
+            _context.UserGroups.Add(entry);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                Console.WriteLine("Already in the DB");
+            }
+        }
+
+        [HttpPut("discord/{userId}")]
+        public async Task<ActionResult> AddDiscordEntries(string userId, List<string> serverIds)
+        {
+            List<int> discordGroups = await _context.Groups.Where(group => serverIds.Contains(group.DiscordServer)) //Users' discord groups
+                                                            .Select(group => group.GroupId).ToListAsync(); //Just get the groupId
+
+            List<int> currentGroups = await _context.UserGroups.Where(userGroup => userGroup.UserId == userId) //Get the users' group ids
+                                                                .Select(userGroup => userGroup.GroupId).ToListAsync();  //Just get the groupId
+
+            List<int> toAdd = discordGroups.Except(currentGroups).ToList();
+            foreach(int item in toAdd)
+            {
+                await AddUserToGroup(userId, item);
+            }
+
+            return NoContent();
         }
 
         // GET: api/Groups/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<GroupsModel>> GetGroupsModel(int id)
+        [HttpGet("UserGroups/{userId}")]
+        public async Task<ActionResult<List<GroupsModel>>> GetUsersGroups(string userId)
         {
-            var groupsModel = await _context.Groups.FindAsync(id);
-
-            if (groupsModel == null)
-            {
-                return NotFound();
-            }
-
-            return groupsModel;
+            UsersModel user = await _context.Users.FindAsync(userId);
+            List<int> groups = await _context.UserGroups.Where(userGroup => userGroup.UserId == userId).Select(group => group.GroupId).ToListAsync();
+            return await _context.Groups.Where(group => groups.Contains(group.GroupId)).ToListAsync();
         }
 
         // PUT: api/Groups/5

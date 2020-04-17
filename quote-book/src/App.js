@@ -15,7 +15,7 @@ function App() {
 
   let getUser = () => {
       fetch(`/api/getUser`).then(response => {
-          let result = response.body
+          let result = response.json()
           return result;
       }).then(payload => {    
         console.log(payload)
