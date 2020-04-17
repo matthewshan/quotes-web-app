@@ -24,7 +24,7 @@ function GroupsView({user}) {
     function onSelect(event) {
         let group = event.target.value;
         if (group != "---") {
-            window.location.replace(`/notebook/${group}`);
+            window.location.href = `/notebook/${group}`;
         }
     }
 

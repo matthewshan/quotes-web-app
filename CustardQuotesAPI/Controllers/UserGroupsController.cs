@@ -6,11 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CustardQuotes.Models;
+using CustardQuotes.Filters;
+
 
 namespace CustardQuotes.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
+    [ApiKeyAuth]
     public class UserGroupsController : ControllerBase
     {
         private readonly CustardQuotesContext _context;

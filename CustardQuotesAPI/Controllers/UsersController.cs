@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CustardQuotes.Models;
+using CustardQuotes.Filters;
 
 namespace CustardQuotes.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
+    [ApiKeyAuth]
     public class UsersController : ControllerBase
     {
         private readonly CustardQuotesContext _context;
@@ -20,14 +22,72 @@ namespace CustardQuotes.Controllers
             _context = context;
         }
 
-        // GET: api/Users
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UsersModel>>> GetUsers()
+        private async Task<UsersModel> CreateUser(UsersModel usersModel)
         {
-            return await _context.Users.ToListAsync();
+            usersModel.Id = Guid.NewGuid().ToString();
+            _context.Users.Add(usersModel);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                if (UsersModelExists(usersModel.Id))
+                {
+                    return await CreateUser(usersModel);
+                }
+                else
+                {
+                    throw e;
+                }
+            }
+
+            return usersModel;
         }
 
-        // GET: api/Users/5
+        private async Task UpdateUser(UsersModel usersModel)
+        {
+            var local = _context.Set<UsersModel>()
+                .Local
+                .FirstOrDefault(entry => entry.Id.Equals(usersModel.Id));
+
+            if (local != null)
+            {
+                _context.Entry(local).State = EntityState.Detached;
+            }
+
+            _context.Entry(usersModel).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
+        [HttpPut("discord/{discordId}")]
+        public async Task<ActionResult<string>> RequestUserDiscord(string discordId, string email)
+        {
+            List<UsersModel> result = await _context.Users.Where(user => user.DiscordId == discordId).ToListAsync();
+
+            UsersModel user = new UsersModel
+            {
+                DiscordId = discordId,
+                Email = email
+            };
+
+            //Creates new user if does not exists
+            if (result.Count == 0)
+            {
+                UsersModel temp = await CreateUser(user);
+                return temp.Id;
+            }
+            // Updates the user if any information was updated
+            else if(!result[0].Equals(user))
+            {
+                user.Id = result[0].Id;
+                await UpdateUser(user);
+                return user.Id;
+            }
+            // If things are the same, don't change anything. Just return the userID
+            return result[0].Id;          
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<UsersModel>> GetUsersModel(string id)
         {
@@ -41,65 +101,6 @@ namespace CustardQuotes.Controllers
             return usersModel;
         }
 
-        // PUT: api/Users/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUsersModel(string id, UsersModel usersModel)
-        {
-            if (id != usersModel.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(usersModel).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UsersModelExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Users
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPost]
-        public async Task<ActionResult<UsersModel>> PostUsersModel(UsersModel usersModel)
-        {
-            _context.Users.Add(usersModel);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (UsersModelExists(usersModel.Id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetUsersModel", new { id = usersModel.Id }, usersModel);
-        }
-
-        // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<UsersModel>> DeleteUsersModel(string id)
         {
