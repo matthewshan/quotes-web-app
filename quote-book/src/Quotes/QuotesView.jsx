@@ -1,6 +1,7 @@
 import React from 'react';
 import QuoteCard from './QuoteCard';
-import styles from './quotes.css';
+import QuoteForm from './QuoteForm';
+import './quotes.css';
 import { useRouteMatch } from 'react-router-dom'
 const apiURL = ''
 
@@ -16,6 +17,8 @@ function QuoteView({user}) {
     let match = useRouteMatch()
     let [quotesList, setQuotesList] = React.useState([]); 
 
+    let [formQuote, setFormQuote] = React.useState({quote: '', quotee: ''}); 
+
     let getQuotes = () => {
         fetch(`${apiURL}/api/getQuotes?groupId=${match.params.groupId}`).then(response => {
             let result = response.json()
@@ -25,10 +28,24 @@ function QuoteView({user}) {
           setQuotesList(payload);
         });
     };
+
+    let updateFormQuote = (field, value) => {
+        let temp = {...formQuote};
+        temp[field] = value;
+        setFormQuote(temp);
+    }
+
+    let newQuote = () => {
+        //POST /api/newQuote - Use the formQuote and add the right header
+        console.log(formQuote)
+    }
     
     React.useEffect(() => getQuotes(), []);
 
-    return <div className="container bg-3 text-center" style={{marginTop: '40px'}}>
+    return <div className="container bg-3 text-center" style={{marginTop: '45px'}}>
+            <div className="row">
+                <QuoteForm currentQuote={formQuote} updateQuote={updateFormQuote} submitQuote={newQuote}/>
+            </div>
             <div className="row">
                 {quotesList.map((quote, i) => (
                     <QuoteCard key={i} quote={quote} />
