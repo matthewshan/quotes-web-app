@@ -169,7 +169,6 @@ app.get('/api/getUser', apiCall, (req, res) => {
     
     needle.put(`${QUOTES_API}/Users/discord/${req.session.discord_id}?email=${req.session.email}`, null, options, (error, response) => {
         if (!error && response.statusCode == 200) {
-            console.log(response.body.id);
             req.session.userId = response.body.id;
             res.send(response.body);
         }
@@ -210,21 +209,21 @@ app.get('/api/addDiscordGroups', apiCall, (req, res) => {
         }
     }
 
-    console.log(req.session.token); 
-
     discordGetUserServers(req.session.token).then((servers) =>{
-        req.session.servers = servers;
-        console.log(req.session.servers)
-        
+        req.session.servers = servers;        
         const data = req.session.servers;
+        let uri = encodeURI(`${QUOTES_API}​/Groups/discord/${req.session.userId}`);
 
         //204 on success
-        needle.request('put', encodeURIComponent(`${QUOTES_API}​/Groups​/discord​/${req.session.user_id}`), data, options, (error, response) => {
+        needle.request('put', uri, data, options, (error, response) => {
             if (!error)
                 res.sendStatus(response.statusCode);
             else   
-                console.log(error + "Failed to retrieve group");
+                console.log(error + ": Failed to insert groups");
         });
+    })
+    .catch((err) => {
+        console.log(err)
     })
 
     
@@ -241,13 +240,12 @@ app.get('/api/userGroups', apiCall, (req, res) => {
     }
 
     //200 Ok 
-    needle.request('get', encodeURIComponent(`${QUOTES_API}​/Groups​/UserGroups​/${req.session.user_id}`), null, options, (error, response) => {
+    needle.request('get', encodeURI(`${QUOTES_API}/Groups/UserGroups/${req.session.userId}`), null, options, (error, response) => {
         if (!error && response.statusCode == 200) {
-            console.log("Groups: " + response.body)
             res.send(response.body);
         }           
         else   
-            console.log("Failed to retrieve group");
+            console.log(error + "Failed to retrieve group");
     });
 });
 
