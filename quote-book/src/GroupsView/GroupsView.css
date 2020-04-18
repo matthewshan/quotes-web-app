@@ -26,5 +26,6 @@ a:hover#newGroup {
 @media only screen and (max-width: 600px) {
     div#groupsView {
         width: 90%;
+        padding: 0 3rem;
     }
 }

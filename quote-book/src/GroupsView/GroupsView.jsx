@@ -31,7 +31,7 @@ function GroupsView({user}) {
             method: 'POST'
         }
 
-        fetch(`/api/newGroup?name=${name}`, options).then(response => {
+        fetch(`/api/newGroup?groupName=${name}`, options).then(response => {
             if(response.status == 200) {
                 alert("Group added")
             }

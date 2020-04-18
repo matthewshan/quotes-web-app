@@ -69,7 +69,7 @@ namespace CustardQuotes.Controllers
             _context.UserGroups.Add(entry);
             await _context.SaveChangesAsync();
             return entry;
-        }
+        }   
         [HttpGet("UserGroups/{userId}")]
         public async Task<ActionResult<List<GroupsModel>>> GetUsersGroups(string userId)
         {
@@ -116,7 +116,7 @@ namespace CustardQuotes.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
-        public async Task<ActionResult<GroupsModel>> PostGroupsModel(GroupsModel groupsModel)
+        public async Task<ActionResult<GroupsModel>> PostGroupsModel([FromBody] GroupsModel groupsModel)
         {
             _context.Groups.Add(groupsModel);
             try
@@ -135,7 +135,7 @@ namespace CustardQuotes.Controllers
                 }
             }
 
-            return CreatedAtAction("GetGroupsModel", new { id = groupsModel.GroupId }, groupsModel);
+            return groupsModel;
         }
 
         // DELETE: api/Groups/5

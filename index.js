@@ -280,26 +280,29 @@ app.post('/api/newGroup', apiCall, (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     
     const options = {
+        json: true,
         headers: {
             ApiKey: APIKey
+            
         }
     }
 
-    const params = {
-        name: req.param.name,
+    const data = {
+        name: req.param.groupName,
         owner: req.session.userId
     }
 
     //200 Ok 
-    needle.request('get', `${QUOTES_API}/Groups/`, params, options, (error, response) => {
+    needle.request('post', `${QUOTES_API}/Groups/`, data, options, (error, response) => {
         if (!error && response.statusCode == 200) {
+            console.log(response.body.groupId)
             req.session.groups.push(response.body);
             addUserToGroup(req.session.userId, response.body.groupId)
-                .then(() => {res.send(response.body);})
-                .catch((err) => {res.send(500, err);})            
+                .then(() => {console.log(response.body); res.send(response.body);})
+                .catch((err) => {console.log(err); res.send(500, err);})            
         }           
         else {
-            console.log(error + "Failed to retrieve group");
+            console.log(response.statusCode + " Failed to add group");
             res.send(500);
         }
     });
