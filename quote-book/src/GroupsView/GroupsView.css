@@ -1,7 +1,27 @@
 div#groupsView {
     width: 30%;
     top: 12vw;
+    padding: 0 2rem;
 }
+
+.groupSelect {
+    height: 3.5em;
+}
+
+.groupSelect option {
+    font-size: 1.5rem;
+}
+
+#newGroup {
+    margin-top: 1rem;
+    color: #007bff;
+}
+
+a:hover#newGroup {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 
 @media only screen and (max-width: 600px) {
     div#groupsView {

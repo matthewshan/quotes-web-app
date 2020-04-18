@@ -21,6 +21,8 @@ function QuoteView({user}) {
 
     let getQuotes = () => {
         fetch(`${apiURL}/api/getQuotes?groupId=${match.params.groupId}`).then(response => {
+            if(response.status == 401)
+                return 401
             let result = response.json()
             console.log('Result: ' + result);
             return result;
@@ -42,6 +44,9 @@ function QuoteView({user}) {
     
     React.useEffect(() => getQuotes(), []);
 
+    if(quotesList == 401) {
+        return <div className="container bg-3 text-center" style={{marginTop: '65px'}}><h1>You do not have access to this group</h1></div>
+    }
     return <div className="container bg-3 text-center" style={{marginTop: '45px'}}>
             <div className="row">
                 <QuoteForm currentQuote={formQuote} updateQuote={updateFormQuote} submitQuote={newQuote}/>
@@ -51,7 +56,9 @@ function QuoteView({user}) {
                     <QuoteCard key={i} quote={quote} />
                 ))}
             </div>
-        </div>;
+    </div>;
+
+        
 }
 
 

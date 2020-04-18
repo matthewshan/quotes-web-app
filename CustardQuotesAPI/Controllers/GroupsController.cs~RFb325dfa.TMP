@@ -58,27 +58,13 @@ namespace CustardQuotes.Controllers
             return NoContent();
         }
 
-        [HttpPost("UserGroups")]
-        public async Task<ActionResult<UserGroupsModel>> AddUserGroup(string userId, int groupId)
-        {
-            UserGroupsModel entry = new UserGroupsModel
-            {
-                UserId = userId,
-                GroupId = groupId
-            };
-            _context.UserGroups.Add(entry);
-            await _context.SaveChangesAsync();
-            return entry;
-        }
         [HttpGet("UserGroups/{userId}")]
         public async Task<ActionResult<List<GroupsModel>>> GetUsersGroups(string userId)
         {
             UsersModel user = await _context.Users.FindAsync(userId);
             List<int> groups = await _context.UserGroups.Where(userGroup => userGroup.UserId == userId).Select(group => group.GroupId).ToListAsync();
             return await _context.Groups.Where(group => groups.Contains(group.GroupId)).ToListAsync();
-        } 
-
-        
+        }
 
         // PUT: api/Groups/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for

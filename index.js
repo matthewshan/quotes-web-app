@@ -103,7 +103,6 @@ function discordGetToken(req, refresh=false) {
         }
 
         needle.post(`https://discordapp.com/api/v6/oauth2/token`, params, options, (error, response) => {
-            console.log(response)
             if (!error && response.statusCode == 200) {
                 resolve(response);
             }
@@ -158,6 +157,30 @@ function discordGetUserServers(token) {
 /***
  * QUOTES API
  */
+function addUserToGroup(userId, groupID) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            headers: {
+                ApiKey: APIKey
+            }
+        }
+
+        const params = {
+            userId: userId,
+            groupId: groupId
+        }
+
+        needle.request('post', `${QUOTES_API}/Groups/UserGroups`, params, options, (error, response) => {
+            if(!error && response.statusCode == 200) {
+                resolve(response.body)
+            } 
+            else {
+                reject(response.statusCode)
+            }
+        });
+    })
+}
+
 app.get('/api/getUser', apiCall, (req, res) => {
     res.setHeader('Content-Type', 'application/json');
 
@@ -178,25 +201,31 @@ app.get('/api/getUser', apiCall, (req, res) => {
 });
 
 app.get('/api/getQuotes', apiCall, (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    
-    const options = {
-        headers: {
-            ApiKey: APIKey
+    let groupIds = req.session.groups.map((group) => group.groupId)
+    if(groupIds.indexOf(parseInt(req.param('groupId'))) != -1) {
+        res.setHeader('Content-Type', 'application/json');
+        
+        const options = {
+            headers: {
+                ApiKey: APIKey
+            }
         }
-    }
 
-    const params = {
-        groupID: req.param('groupId')
-    }
-    
-    needle.request('get', `${QUOTES_API}/Quotes/byGroup`, params, options, (error, response) => {
-        if (!error && response.statusCode == 200) {
-            res.send(response.body);
+        const params = {
+            groupID: req.param('groupId')
         }
-        else   
-            console.log("Failed to retrieve group");
-    })
+        
+        needle.request('get', `${QUOTES_API}/Quotes/byGroup`, params, options, (error, response) => {
+            if (!error && response.statusCode == 200) {
+                res.send(response.body);
+            }
+            else   
+                console.log("Failed to retrieve group");
+        })
+    }
+    else {
+        res.send(401);
+    }
 });
 
 app.get('/api/addDiscordGroups', apiCall, (req, res) => {
@@ -211,8 +240,9 @@ app.get('/api/addDiscordGroups', apiCall, (req, res) => {
 
     discordGetUserServers(req.session.token).then((servers) =>{
         req.session.servers = servers;        
-        const data = req.session.servers;
-        let uri = encodeURI(`${QUOTES_API}​/Groups/discord/${req.session.userId}`);
+        const data = JSON.stringify(req.session.servers);
+        let uri = `${QUOTES_API}​/Groups/discord/${encodeURI(req.session.userId)}`;
+        console.log(uri)
 
         //204 on success
         needle.request('put', uri, data, options, (error, response) => {
@@ -225,9 +255,6 @@ app.get('/api/addDiscordGroups', apiCall, (req, res) => {
     .catch((err) => {
         console.log(err)
     })
-
-    
-
 });
 
 app.get('/api/userGroups', apiCall, (req, res) => {
@@ -238,14 +265,43 @@ app.get('/api/userGroups', apiCall, (req, res) => {
             ApiKey: APIKey
         }
     }
-
     //200 Ok 
     needle.request('get', encodeURI(`${QUOTES_API}/Groups/UserGroups/${req.session.userId}`), null, options, (error, response) => {
         if (!error && response.statusCode == 200) {
+            req.session.groups = response.body;
             res.send(response.body);
         }           
         else   
             console.log(error + "Failed to retrieve group");
+    });
+});
+
+app.post('/api/newGroup', apiCall, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    
+    const options = {
+        headers: {
+            ApiKey: APIKey
+        }
+    }
+
+    const params = {
+        name: req.param.name,
+        owner: req.session.userId
+    }
+
+    //200 Ok 
+    needle.request('get', `${QUOTES_API}/Groups/`, params, options, (error, response) => {
+        if (!error && response.statusCode == 200) {
+            req.session.groups.push(response.body);
+            addUserToGroup(req.session.userId, response.body.groupId)
+                .then(() => {res.send(response.body);})
+                .catch((err) => {res.send(500, err);})            
+        }           
+        else {
+            console.log(error + "Failed to retrieve group");
+            res.send(500);
+        }
     });
 });
 
