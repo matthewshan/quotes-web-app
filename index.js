@@ -157,7 +157,7 @@ function discordGetUserServers(token) {
 /***
  * QUOTES API
  */
-function addUserToGroup(userId, groupID) {
+function addUserToGroup(userId, groupId) {
     return new Promise((resolve, reject) => {
         const options = {
             headers: {
@@ -165,17 +165,13 @@ function addUserToGroup(userId, groupID) {
             }
         }
 
-        const params = {
-            userId: userId,
-            groupId: groupId
-        }
-
-        needle.request('post', `${QUOTES_API}/Groups/UserGroups`, params, options, (error, response) => {
+        needle.request('post', `${QUOTES_API}/Groups/UserGroups?userId=${userId}&groupId=${groupId}`, null, options, (error, response) => {
             if(!error && response.statusCode == 200) {
                 resolve(response.body)
             } 
             else {
-                reject(response.statusCode)
+                console.log(response.body)
+                reject("Failed to add owner. Status: " + response.statusCode)
             }
         });
     })
@@ -288,14 +284,13 @@ app.post('/api/newGroup', apiCall, (req, res) => {
     }
 
     const data = {
-        name: req.param.groupName,
+        name: req.param('groupName'),
         owner: req.session.userId
     }
 
     //200 Ok 
     needle.request('post', `${QUOTES_API}/Groups/`, data, options, (error, response) => {
         if (!error && response.statusCode == 200) {
-            console.log(response.body.groupId)
             req.session.groups.push(response.body);
             addUserToGroup(req.session.userId, response.body.groupId)
                 .then(() => {console.log(response.body); res.send(response.body);})
