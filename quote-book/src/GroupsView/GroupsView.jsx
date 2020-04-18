@@ -16,7 +16,8 @@ function GroupsView({user}) {
                 console.log('Result: ' + result);
                 return result;
             }).then(payload => {    
-              setGroupsList(payload);
+                console.log("Payload: " + payload);
+                setGroupsList(payload);
             });
         });
     };
@@ -35,7 +36,7 @@ function GroupsView({user}) {
                 <select className="" onChange={onSelect}>
                     <option value="---">---</option>
                     {
-                        groupsList.map((item, i) => <GroupItem key={i} id={item.id} name={item.name}/>)
+                        groupsList.map((item, i) => <GroupItem key={i} id={item.groupId} name={item.name}/>)
                     }
                 </select>
                 <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"> + Create New Group</a>

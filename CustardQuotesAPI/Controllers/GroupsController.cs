@@ -58,7 +58,6 @@ namespace CustardQuotes.Controllers
             return NoContent();
         }
 
-        // GET: api/Groups/5
         [HttpGet("UserGroups/{userId}")]
         public async Task<ActionResult<List<GroupsModel>>> GetUsersGroups(string userId)
         {

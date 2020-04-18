@@ -20,7 +20,6 @@ const APIKey = process.env.API_KEY
 if(process.env.IS_DEV) {
     console.log("Starting in development mode. Make sure this is not running for production")
     REDIRECT_URI = 'http://localhost:5000/login/discord/callback'
-    QUOTES_API = 'http://localhost:32855'
     app.use(cors({
         origin: 'http://localhost:3000'
     }));
@@ -193,8 +192,9 @@ app.get('/api/getQuotes', apiCall, (req, res) => {
     }
     
     needle.request('get', `${QUOTES_API}/Quotes/byGroup`, params, options, (error, response) => {
-        if (!error && response.statusCode == 200)
+        if (!error && response.statusCode == 200) {
             res.send(response.body);
+        }
         else   
             console.log("Failed to retrieve group");
     })
@@ -204,18 +204,31 @@ app.get('/api/addDiscordGroups', apiCall, (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     
     const options = {
+        json: true,
         headers: {
             ApiKey: APIKey
         }
     }
 
-    //204 on success
-    needle.request('put', `${QUOTES_API}​/Groups​/discord​/${req.session.user_id}`, req.session.servers, options, (error, response) => {
-        if (!error)
-            res.sendStatus(response.statusCode);
-        else   
-            console.log("Failed to retrieve group");
-    });
+    console.log(req.session.token); 
+
+    discordGetUserServers(req.session.token).then((servers) =>{
+        req.session.servers = servers;
+        console.log(req.session.servers)
+        
+        const data = req.session.servers;
+
+        //204 on success
+        needle.request('put', encodeURIComponent(`${QUOTES_API}​/Groups​/discord​/${req.session.user_id}`), data, options, (error, response) => {
+            if (!error)
+                res.sendStatus(response.statusCode);
+            else   
+                console.log(error + "Failed to retrieve group");
+        });
+    })
+
+    
+
 });
 
 app.get('/api/userGroups', apiCall, (req, res) => {
@@ -228,9 +241,11 @@ app.get('/api/userGroups', apiCall, (req, res) => {
     }
 
     //200 Ok 
-    needle.request('get', `${QUOTES_API}​/Groups​/UserGroups​/${req.session.user_id}`, null, options, (error, response) => {
-        if (!error && response.statusCode == 200)
+    needle.request('get', encodeURIComponent(`${QUOTES_API}​/Groups​/UserGroups​/${req.session.user_id}`), null, options, (error, response) => {
+        if (!error && response.statusCode == 200) {
+            console.log("Groups: " + response.body)
             res.send(response.body);
+        }           
         else   
             console.log("Failed to retrieve group");
     });
@@ -263,10 +278,7 @@ app.get('/login/discord/callback', redirectHome, (req, res) => {
             req.session.email = userInfo.email;
             req.session.discord_id = userInfo.id;
             // console.log('id: ' + userInfo.id)
-            discordGetUserServers(req.session.token).then((servers) =>{
-                req.session.servers = servers;
-                // console.log(req.session.servers)
-            })
+            
             res.redirect("/");
         })
     }).catch((err) => {

@@ -18,7 +18,7 @@ function App() {
           let result = response.json()
           return result;
       }).then(payload => {    
-        console.log(payload)
+        // console.log(payload)
         setUser(payload);
       });
   };
