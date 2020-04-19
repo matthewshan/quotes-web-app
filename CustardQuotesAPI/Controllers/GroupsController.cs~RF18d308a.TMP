@@ -78,17 +78,7 @@ namespace CustardQuotes.Controllers
             return await _context.Groups.Where(group => groups.Contains(group.GroupId)).ToListAsync();
         } 
 
-        [HttpPost("UserGroups/shareEmail")]
-        public async Task<ActionResult> ShareViaEmail(string email, int groupId)
-        {
-            List<UsersModel> user = await _context.Users.Where(user => user.Email == email).ToListAsync();
-            if(user.Count == 0)
-            {
-                return NotFound();
-            }
-            await AddUserToGroup(user[0].Id, groupId);
-            return Ok();
-        }        
+        
 
         // PUT: api/Groups/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for

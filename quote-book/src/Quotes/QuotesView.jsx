@@ -51,6 +51,40 @@ function QuoteView({user}) {
             window.location.reload()
         });
     }
+
+    let addFriend = (event) => {
+        let regex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+        let email = prompt("Please enter you're Friend's Email (Associated with their Discord)")
+        if(email) {
+            if(regex.test(email)) {
+                let data = {
+                    email: email,
+                    groupId: match.params.groupId
+                }
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json;charset=UTF-8'
+                      },
+                    body: JSON.stringify(data)
+                }
+                fetch('/api/shareEmail', options)
+                .then((response) => {
+                    if(response.status == 200)
+                        alert("Friend Added!")
+                    else
+                        alert("Failed to add: " + email)
+                    }
+                )
+            }
+            else {
+                alert("Invalid Email..")
+            }
+            
+        }
+        
+    }
     
     React.useEffect(() => getQuotes(), []);
 
@@ -60,6 +94,9 @@ function QuoteView({user}) {
     return <div className="container bg-3 text-center" style={{marginTop: '45px'}}>
             <div className="row">
                 <QuoteForm currentQuote={formQuote} updateQuote={updateFormQuote} submitQuote={newQuote}/>
+            </div>
+            <div className="row">
+                <a id="shareLink" onClick={addFriend}>+ Add Friends</a>
             </div>
             <div className="row">
                 {quotesList.map((quote, i) => (

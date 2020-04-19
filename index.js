@@ -346,7 +346,27 @@ app.post('/api/addQuote', apiCall, (req, res) => {
             res.send(response.statusCode)
         }
     });
+})
 
+app.post('/api/shareEmail', apiCall, (req,res) => {
+    res.setHeader('Content-Type', 'application/json');
+
+    const options = {
+        headers: {
+            ApiKey: APIKey
+        }
+    }
+
+    let email = encodeURIComponent(req.body['email'])
+    let groupId = req.body['groupId']
+
+    needle.post(`${QUOTES_API}/Groups/shareEmail?email=${email}&groupId=${groupId}`, null, options, (error, response) => {
+        if(!error) {
+            res.sendStatus(response.statusCode)
+        }
+        else 
+            console.log(error)
+    });
 })
 
 

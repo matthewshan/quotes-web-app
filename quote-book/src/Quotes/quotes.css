@@ -12,3 +12,12 @@
     font-weight: 350;
     font-style: italic;
 }
+
+#shareLink {
+    color: #007bff;
+}
+
+a:hover#shareLink {
+    text-decoration: underline;
+    cursor: pointer;
+}
