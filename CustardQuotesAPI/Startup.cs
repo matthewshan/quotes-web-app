@@ -16,6 +16,9 @@ using Swashbuckle.AspNetCore;
 using CustardQuotes.Models;
 using CustardQuotes.Filters;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using System.IO;
+
 namespace CustardQuotes
 {
     public class Startup
@@ -38,9 +41,14 @@ namespace CustardQuotes
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(config =>
             {
-                config.SwaggerDoc("v1", new OpenApiInfo { Title = "Custard Quotes API", Version = "v1" });
+                config.SwaggerDoc("v1", new OpenApiInfo { Title = "Quote-Book API", Version = "v1" });
                 config.OperationFilter<ApiKeyAuthAttribute>();
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                config.IncludeXmlComments(xmlPath);
             });
+
+            
         }                                            
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,18 +57,17 @@ namespace CustardQuotes
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-
-                // Enable middleware to serve generated Swagger as a JSON endpoint.
-                app.UseSwagger();
-
-                // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-                // specifying the Swagger JSON endpoint.
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Custard Quotes API V1");
-                    c.RoutePrefix = string.Empty;
-                });
             }
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Custard Quotes API V1");
+                c.RoutePrefix = string.Empty;
+            });
 
             app.UseHttpsRedirection();
 

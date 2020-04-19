@@ -22,6 +22,7 @@ namespace CustardQuotes.Controllers
             _context = context;
         }
 
+
         private async Task AddUserToGroup(string userId, int groupId)
         {
             UserGroupsModel entry = new UserGroupsModel
@@ -40,6 +41,9 @@ namespace CustardQuotes.Controllers
             }
         }
 
+        /// <summary>
+        ///  Updates the User's groups based on their discord servers.
+        /// </summary>
         [HttpPut("discord/{userId}")]
         public async Task<ActionResult> AddDiscordEntries(string userId, List<string> serverIds)
         {
@@ -55,9 +59,12 @@ namespace CustardQuotes.Controllers
                 await AddUserToGroup(userId, item);
             }
 
-            return NoContent();
+            return Ok();
         }
 
+        /// <summary>
+        ///  Adds a new user to a group
+        /// </summary>
         [HttpPost("UserGroups")]
         public async Task<ActionResult<UserGroupsModel>> AddUserGroup(string userId, int groupId)
         {
@@ -69,15 +76,22 @@ namespace CustardQuotes.Controllers
             _context.UserGroups.Add(entry);
             await _context.SaveChangesAsync();
             return entry;
-        }   
+        }
+
+        /// <summary>
+        ///  Get the groups associated with a user
+        /// </summary>
         [HttpGet("UserGroups/{userId}")]
         public async Task<ActionResult<List<GroupsModel>>> GetUsersGroups(string userId)
         {
             UsersModel user = await _context.Users.FindAsync(userId);
             List<int> groups = await _context.UserGroups.Where(userGroup => userGroup.UserId == userId).Select(group => group.GroupId).ToListAsync();
             return await _context.Groups.Where(group => groups.Contains(group.GroupId)).ToListAsync();
-        } 
+        }
 
+        /// <summary>
+        ///  Adds a user to a group via email
+        /// </summary>
         [HttpPost("UserGroups/shareEmail")]
         public async Task<ActionResult> ShareViaEmail(string email, int groupId)
         {
@@ -89,80 +103,6 @@ namespace CustardQuotes.Controllers
             await AddUserToGroup(user[0].Id, groupId);
             return Ok();
         }        
-
-        // PUT: api/Groups/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutGroupsModel(int id, GroupsModel groupsModel)
-        {
-            if (id != groupsModel.GroupId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(groupsModel).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!GroupsModelExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Groups
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPost]
-        public async Task<ActionResult<GroupsModel>> PostGroupsModel([FromBody] GroupsModel groupsModel)
-        {
-            _context.Groups.Add(groupsModel);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (GroupsModelExists(groupsModel.GroupId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return groupsModel;
-        }
-
-        // DELETE: api/Groups/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<GroupsModel>> DeleteGroupsModel(int id)
-        {
-            var groupsModel = await _context.Groups.FindAsync(id);
-            if (groupsModel == null)
-            {
-                return NotFound();
-            }
-
-            _context.Groups.Remove(groupsModel);
-            await _context.SaveChangesAsync();
-
-            return groupsModel;
-        }
 
         private bool GroupsModelExists(int id)
         {

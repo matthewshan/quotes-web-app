@@ -25,30 +25,45 @@ namespace CustardQuotes.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Checks to see if the API is active
+        /// </summary>
         [HttpHead]
         public ActionResult Ping()
         {
             return Ok();
         }
 
+        /// <summary>
+        ///  Gets ALL quotes in the database
+        /// </summary>
         [HttpGet("all")]
         public async Task<ActionResult<List<CustardQuotesModel>>> Get()
         {
             return await _context.CustardQuotes.ToListAsync();
         }
 
+        /// <summary>
+        ///  Gets the quotes of a particular group
+        /// </summary>
         [HttpGet("byGroup")]
         public async Task<ActionResult<List<CustardQuotesModel>>> Get(int groupID)
         {
             return await _context.CustardQuotes.Where(quote => quote.GroupId == groupID).OrderByDescending(quote => quote.DateAdded).ToListAsync();
         }
 
+        /// <summary>
+        ///  Gets the quotes of a specfic Person/Quotee
+        /// </summary>
         [HttpGet("byName")]
         public async Task<ActionResult<List<CustardQuotesModel>>> Get(String name, int groupID)
         {
             return await _context.CustardQuotes.Where(quote => quote.Person == name && quote.GroupId == groupID).OrderBy(quote => quote.DateAdded).ToListAsync();
         }
 
+        /// <summary>
+        ///  Gets the quotes by ID
+        /// </summary>
         [HttpGet("byId")]
         public async Task<ActionResult<CustardQuotesModel>> GetByID(int id)
         {
@@ -56,12 +71,18 @@ namespace CustardQuotes.Controllers
             return result[0];
         }
 
+        /// <summary>
+        ///  Gets all the quotees based on a group
+        /// </summary>
         [HttpGet("allNames")]
         public async Task<ActionResult<List<string>>> GetNames(int groupID)
         {
             return await _context.CustardQuotes.Where(quote => quote.GroupId == groupID).Select(quote => quote.Person).Distinct().ToListAsync();
         }
 
+        /// <summary>
+        ///  Creates a new quote
+        /// </summary>
         [HttpPost("new")]
         public async Task<ActionResult> Add([FromBody] CustardQuotesModel newQuote)
         {
@@ -71,6 +92,10 @@ namespace CustardQuotes.Controllers
             return Ok();
         }
 
+
+        /// <summary>
+        ///  Helps rename quotees in case of a typo
+        /// </summary>
         [HttpPut("merge")]
         public async Task<ActionResult> MergeNames([FromBody] List<string> oldNames, string newName, int groupId)
         {
@@ -94,6 +119,9 @@ namespace CustardQuotes.Controllers
             return Ok();
         }
 
+        /// <summary>
+        ///  Deletes quote based on id
+        /// </summary>
         [HttpDelete("delete")]
         public async Task<ActionResult<CustardQuotesModel>> Delete(int id)
         {

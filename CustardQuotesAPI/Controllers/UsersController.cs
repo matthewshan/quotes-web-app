@@ -59,7 +59,9 @@ namespace CustardQuotes.Controllers
             _context.Entry(usersModel).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
-
+        /// <summary>
+        ///  Returns a user object based on discordId and email. Can update email if applicable 
+        /// </summary>
         [HttpPut("discord/{discordId}")]
         public async Task<ActionResult<UsersModel>> RequestUserDiscord(string discordId, string email)
         {
@@ -87,6 +89,9 @@ namespace CustardQuotes.Controllers
             return result[0];          
         }
 
+        /// <summary>
+        ///  Gets user based on ID
+        /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<UsersModel>> GetUsersModel(string id)
         {
@@ -96,21 +101,6 @@ namespace CustardQuotes.Controllers
             {
                 return NotFound();
             }
-
-            return usersModel;
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<UsersModel>> DeleteUsersModel(string id)
-        {
-            var usersModel = await _context.Users.FindAsync(id);
-            if (usersModel == null)
-            {
-                return NotFound();
-            }
-
-            _context.Users.Remove(usersModel);
-            await _context.SaveChangesAsync();
 
             return usersModel;
         }
