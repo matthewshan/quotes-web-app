@@ -66,14 +66,7 @@ namespace CustardQuotes.Controllers
         public async Task<ActionResult> Add([FromBody] CustardQuotesModel newQuote)
         {
             await _context.CustardQuotes.AddAsync(newQuote);
-            try 
-            {
-                await _context.SaveChangesAsync(); //TODO: Check if change is allowed
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, e.Message);
-            }
+            await _context.SaveChangesAsync(); //TODO: Check if change is allowed
 
             return Ok();
         }

@@ -3,6 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const needle = require('needle')
 const crypto = require('crypto')
+const bodyParser = require('body-parser')
 
 const session = require('express-session')
 var MemcachedStore = require('connect-memjs')(session);
@@ -29,6 +30,9 @@ if(process.env.IS_DEV) {
 /***
  * Middleware
  */
+// parse application/json
+app.use(bodyParser.json())
+
 app.use(session({
     store: new MemcachedStore({
         servers: [process.env.MEMCACHIER_SERVERS],
@@ -302,6 +306,48 @@ app.post('/api/newGroup', apiCall, (req, res) => {
         }
     });
 });
+
+app.post('/api/addQuote', apiCall, (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    
+    const options = {
+        json: true,
+        headers: {
+            ApiKey: APIKey
+        }
+    }
+
+    let now = new Date();
+    const year = now.getFullYear()
+    const month = (now.getMonth()+1).toString().padStart(2, "0")
+    const day = now.getDate().toString().padStart(2, "0")
+    const hour = now.getHours().toString().padStart(2, "0")
+    const min = now.getMinutes().toString().padStart(2, "0")
+    let today = `${year}-${month}-${day}T${hour}:${min}:00.000Z`
+
+    const data = {
+        quote: req.body.quote,
+        person: req.body.quotee,
+        author: req.session.userId,
+        dateAdded: today,
+        source: 'Web',
+        groupId: parseInt(req.param('groupId'))
+    }
+
+    console.log(data)
+
+    needle.post(`${QUOTES_API}/Quotes/new`, data, options, (error, response) => {
+        if(!error && response.statusCode == 200) {
+            console.log(response.body)
+            res.send(response.body)
+        } 
+        else {
+            console.log(response.statusCode + "Failed to add")
+            res.send(response.statusCode)
+        }
+    });
+
+})
 
 
 
