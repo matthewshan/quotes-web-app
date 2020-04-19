@@ -360,7 +360,7 @@ app.post('/api/shareEmail', apiCall, (req,res) => {
     let email = encodeURIComponent(req.body['email'])
     let groupId = req.body['groupId']
 
-    needle.post(`${QUOTES_API}/Groups/shareEmail?email=${email}&groupId=${groupId}`, null, options, (error, response) => {
+    needle.post(`${QUOTES_API}/Groups/UserGroups/shareEmail?email=${email}&groupId=${groupId}`, null, options, (error, response) => {
         if(!error) {
             res.sendStatus(response.statusCode)
         }

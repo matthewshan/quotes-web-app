@@ -2,3 +2,5 @@ node_modules/
 dev.js
 sessions/
 test.js
+example_com.csr
+example_com.key
