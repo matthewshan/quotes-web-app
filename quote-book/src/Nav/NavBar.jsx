@@ -11,9 +11,9 @@ function NavBar({user}) {
             Logout
         </button>
         <div className="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">Logout of <span className="text-white">{user.email}</span></a>
+            <ul className="navbar-nav ml-auto">
+                <li className="nav-item">
+                    <a className="nav-link" href="/logout">Logout of <span className="text-white">{user.email}</span></a>
                 </li>
             </ul>
         </div>
