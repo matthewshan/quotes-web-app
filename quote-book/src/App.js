@@ -20,6 +20,8 @@ function App() {
       }).then(payload => {    
         // console.log(payload)
         setUser(payload);
+      }).catch(err => {
+        alert(err)
       });
   };
   React.useEffect(() => getUser(), []);

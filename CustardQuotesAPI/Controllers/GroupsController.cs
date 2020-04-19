@@ -68,6 +68,10 @@ namespace CustardQuotes.Controllers
         [HttpPost("UserGroups")]
         public async Task<ActionResult<UserGroupsModel>> AddUserGroup(string userId, int groupId)
         {
+            if (userId == "undefined")
+            {
+                return NotFound();
+            }   
             UserGroupsModel entry = new UserGroupsModel
             {
                 UserId = userId,
@@ -84,6 +88,10 @@ namespace CustardQuotes.Controllers
         [HttpGet("UserGroups/{userId}")]
         public async Task<ActionResult<List<GroupsModel>>> GetUsersGroups(string userId)
         {
+            if(userId == "undefined")
+            {
+                return NotFound();
+            }
             UsersModel user = await _context.Users.FindAsync(userId);
             List<int> groups = await _context.UserGroups.Where(userGroup => userGroup.UserId == userId).Select(group => group.GroupId).ToListAsync();
             return await _context.Groups.Where(group => groups.Contains(group.GroupId)).ToListAsync();
@@ -102,7 +110,33 @@ namespace CustardQuotes.Controllers
             }
             await AddUserToGroup(user[0].Id, groupId);
             return Ok();
-        }        
+        }
+
+        /// <summary>
+        /// Adds a new group
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult<GroupsModel>> PostGroupsModel([FromBody] GroupsModel groupsModel)
+        {
+            _context.Groups.Add(groupsModel);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (GroupsModelExists(groupsModel.GroupId))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return groupsModel;
+        }
 
         private bool GroupsModelExists(int id)
         {

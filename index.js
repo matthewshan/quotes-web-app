@@ -9,6 +9,7 @@ const session = require('express-session')
 var MemcachedStore = require('connect-memjs')(session);
 const app = express();
 
+
 /***
  * Important Variables
  */
@@ -49,7 +50,15 @@ app.use(session({
 
 let isValid = (value) => (/(http:\/\/localhost:5000\/|https:\/\/quotes-book\.herokuapp\.com\/|http:\/\/localhost:3000\/|http:\/\/(www\.)?quote-book\.me\/)($|(notebook\/\d+))/.test(value))
 const apiCall = (req, res, next) => {
-    if(!isValid(req.get('referer'))) {
+    if(!req.session.userId) {
+        console.log("User id not found...")
+        getUser(req.session.discord_id, req.session.email).then((data) => {
+            req.session.userId = data.id
+
+        })
+        next();
+    }
+    else if(!isValid(req.get('referer'))) {
         res.send(401,"Access Denied From");
     }
     else {
@@ -60,11 +69,9 @@ const apiCall = (req, res, next) => {
 const redirectLogin = (req, res, next) => {
     let token = req.session.token
     if(!token) {
-        console.log(req.path + ":" + req.session.token);
         res.redirect('/login');
     }
     else {
-        // console.log(req.session.token)
         next();
     }
 }
@@ -126,7 +133,6 @@ function discordGetUser(token) {
     
         needle.request('get', `${DISCORD_API}/users/@me`, null, options, (error, response) => {
             if(!error && response.statusCode == 200) {
-                // console.log('Inside request: ' + response.body)
                 resolve(response.body);
             }
             else {
@@ -174,30 +180,40 @@ function addUserToGroup(userId, groupId) {
                 resolve(response.body)
             } 
             else {
-                console.log(response.body)
                 reject("Failed to add owner. Status: " + response.statusCode)
             }
         });
     })
 }
 
-app.get('/api/getUser', apiCall, (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-
-    const options = {
-        headers: {
-            ApiKey: APIKey
+function getUser(discordId, email) {
+    return new Promise((resolve, reject) =>{
+        const options = {
+            headers: {
+                ApiKey: APIKey
+            }
         }
-    }
-    
-    needle.put(`${QUOTES_API}/Users/discord/${req.session.discord_id}?email=${req.session.email}`, null, options, (error, response) => {
-        if (!error && response.statusCode == 200) {
-            req.session.userId = response.body.id;
-            res.send(response.body);
-        }
-        else   
-            console.log(response.statusCode + "Failed to retrieve user...");
+        
+        needle.put(`${QUOTES_API}/Users/discord/${discordId}?email=${email}`, null, options, (error, response) => {
+            if (!error && response.statusCode == 200) {
+                resolve(response.body);
+            }
+            else   
+                reject("Failed to retrieve user...");
+        })
     })
+}
+
+
+app.get('/api/getUser', apiCall, (req, res) => {
+    getUser(req.session.discord_id, req.session.email)
+        .then((data) => {
+            res.send(JSON.stringify(data));
+        })
+        .catch((err) => {
+            res.sendStatus(500)
+        })
+    
 });
 
 app.get('/api/getQuotes', apiCall, (req, res) => {
@@ -242,7 +258,6 @@ app.get('/api/addDiscordGroups', apiCall, (req, res) => {
         req.session.servers = servers;        
         const data = JSON.stringify(req.session.servers);
         let uri = `${QUOTES_API}​/Groups/discord/${encodeURI(req.session.userId)}`;
-        console.log(uri)
 
         //204 on success
         needle.request('put', uri, data, options, (error, response) => {
@@ -271,8 +286,10 @@ app.get('/api/userGroups', apiCall, (req, res) => {
             req.session.groups = response.body;
             res.send(response.body);
         }           
-        else   
+        else  {
             console.log(error + "Failed to retrieve group");
+            res.sendStatus(500);
+        }
     });
 });
 
@@ -297,8 +314,8 @@ app.post('/api/newGroup', apiCall, (req, res) => {
         if (!error && response.statusCode == 200) {
             req.session.groups.push(response.body);
             addUserToGroup(req.session.userId, response.body.groupId)
-                .then(() => {console.log(response.body); res.send(response.body);})
-                .catch((err) => {console.log(err); res.send(500, err);})            
+                .then(() => {res.send(response.body);})
+                .catch((err) => {res.send(500, err);})            
         }           
         else {
             console.log(response.statusCode + " Failed to add group");
@@ -334,11 +351,8 @@ app.post('/api/addQuote', apiCall, (req, res) => {
         groupId: parseInt(req.param('groupId'))
     }
 
-    console.log(data)
-
     needle.post(`${QUOTES_API}/Quotes/new`, data, options, (error, response) => {
         if(!error && response.statusCode == 200) {
-            console.log(response.body)
             res.send(response.body)
         } 
         else {
@@ -386,19 +400,20 @@ app.get('/login/discord', redirectHome, (req, res) => {
 
 app.get('/login/discord/callback', redirectHome, (req, res) => {
     console.log("Attemping to log in...")
+    req.session.groups = undefined;
+    req.session.servers = undefined;
     discordGetToken(req)
     .then((response) => {
         req.session.token = response.body.access_token;
         req.session.refresh_token = response.body.refresh_token;
         req.session.expires = new Date().getTime()/1000 + response.body.expires_in;
         discordGetUser(req.session.token).then((userInfo) => {
-            // console.log(userInfo.email)
             req.session.email = userInfo.email;
             req.session.discord_id = userInfo.id;
-            // console.log('id: ' + userInfo.id)
-            
-            res.redirect("/");
-        })
+            getUser(userInfo.id, userInfo.email).then((data) => {
+                req.session.userId = data.id;
+            })        
+        }).then(() => res.redirect("/"))
     }).catch((err) => {
         console.log(err);
     })
@@ -406,7 +421,6 @@ app.get('/login/discord/callback', redirectHome, (req, res) => {
 
 app.get('/logout', redirectLogin, (req, res) => {
     req.session.destroy();
-    req.session = null;
     res.redirect("/login");
 });
 
