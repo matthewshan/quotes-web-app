@@ -15,7 +15,7 @@ const apiURL = ''
 
 function QuoteView({user}) {
     let match = useRouteMatch()
-    let [quotesList, setQuotesList] = React.useState([]); 
+    let [quotesList, setQuotesList] = React.useState([{quote: 'Loading'}]); 
 
     let [formQuote, setFormQuote] = React.useState({quote: '', quotee: ''}); 
 
@@ -39,7 +39,17 @@ function QuoteView({user}) {
 
     let newQuote = () => {
         //POST /api/newQuote - Use the formQuote and add the right header
-        console.log(formQuote)
+        const options = {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json;charset=UTF-8'
+              },
+            body: JSON.stringify(formQuote)
+        }
+        fetch(`/api/addQuote?groupId=${match.params.groupId}`, options).then(response => {
+            window.location.reload()
+        });
     }
     
     React.useEffect(() => getQuotes(), []);

@@ -7,7 +7,7 @@ function GroupItem({id, name}) {
 
 function GroupsView({user}) {
 
-    let [groupsList, setGroupsList] = React.useState([{}]); 
+    let [groupsList, setGroupsList] = React.useState([{name:"Loading"},{name:"Loading"},{name:"Loading"},{name:"Loading"}]); 
 
     let getGroups = () => {
         fetch(`/api/addDiscordGroups`).then(response => {
@@ -34,6 +34,7 @@ function GroupsView({user}) {
         fetch(`/api/newGroup?groupName=${name}`, options).then(response => {
             if(response.status == 200) {
                 alert("Group added")
+                getGroups()
             }
             else {
                 alert("Failed to add group")
