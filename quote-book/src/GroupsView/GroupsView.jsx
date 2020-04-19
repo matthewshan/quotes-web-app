@@ -7,16 +7,14 @@ function GroupItem({id, name}) {
 
 function GroupsView({user}) {
 
-    let [groupsList, setGroupsList] = React.useState([{name:"Loading"},{name:"Loading"},{name:"Loading"},{name:"Loading"}]); 
+    let [groupsList, setGroupsList] = React.useState([{name:"Loading"}]); 
 
     let getGroups = () => {
-        fetch(`/api/addDiscordGroups`).then(response => {
+        fetch(`/api/addDiscordGroups`).then(_ => {
             fetch(`/api/userGroups`).then(response => { 
                 let result = response.json()
-                console.log('Result: ' + result);
                 return result;
             }).then(data => {    
-                console.log("Payload: " + data);
                 setGroupsList(data);
             });
         });
