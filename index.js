@@ -15,7 +15,7 @@ const app = express();
 const DISCORD_API = 'https://discordapp.com/api/v6';
 const DISCORD_CLIENTID = process.env.DISCORD_CLIENTID
 const DISCORD_SECRET = process.env.DISCORD_SECRET
-let REDIRECT_URI = 'https://quote-book.me/login/discord/callback'
+let REDIRECT_URI = 'http://quote-book.me/login/discord/callback'
 let QUOTES_API = 'https://custardquotesapi.azurewebsites.net'
 const APIKey = process.env.API_KEY
 if(process.env.IS_DEV) {
