@@ -47,7 +47,7 @@ app.use(session({
     }
 }));
 
-let isValid = (value) => (/(http:\/\/localhost:5000\/|https:\/\/quotes-book\.herokuapp\.com\/|http:\/\/localhost:3000\/|http:\/\/www\.quote-book\.me\/)($|(notebook\/\d+))/.test(value))
+let isValid = (value) => (/(http:\/\/localhost:5000\/|https:\/\/quotes-book\.herokuapp\.com\/|http:\/\/localhost:3000\/|http:\/\/(www\.)?quote-book\.me\/)($|(notebook\/\d+))/.test(value))
 const apiCall = (req, res, next) => {
     if(!isValid(req.get('referer'))) {
         res.send(401,"Access Denied From");
