@@ -15,7 +15,7 @@ const app = express();
 const DISCORD_API = 'https://discordapp.com/api/v6';
 const DISCORD_CLIENTID = process.env.DISCORD_CLIENTID
 const DISCORD_SECRET = process.env.DISCORD_SECRET
-let REDIRECT_URI = 'https://quote-book.me/login/discord/callback'
+let REDIRECT_URI = 'http://quote-book.me/login/discord/callback'
 let QUOTES_API = 'https://custardquotesapi.azurewebsites.net'
 const APIKey = process.env.API_KEY
 if(process.env.IS_DEV) {
@@ -47,7 +47,7 @@ app.use(session({
     }
 }));
 
-let isValid = (value) => (/(http:\/\/localhost:5000\/|https:\/\/quotes-book\.herokuapp\.com\/|http:\/\/localhost:3000\/)($|(notebook\/\d+))/.test(value))
+let isValid = (value) => (/(http:\/\/localhost:5000\/|https:\/\/quotes-book\.herokuapp\.com\/|http:\/\/localhost:3000\/|http:\/\/quote-book.me\/)($|(notebook\/\d+))/.test(value))
 const apiCall = (req, res, next) => {
     if(!isValid(req.get('referer'))) {
         res.send(401,"Access Denied From");

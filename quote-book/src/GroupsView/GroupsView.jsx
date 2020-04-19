@@ -7,7 +7,7 @@ function GroupItem({id, name}) {
 
 function GroupsView({user}) {
 
-    let [groupsList, setGroupsList] = React.useState([{name:"Loading"}]); 
+    let [groupsList, setGroupsList] = React.useState([{name:"Loading", groupId: -1}]); 
 
     let getGroups = () => {
         fetch(`/api/addDiscordGroups`).then(_ => {
@@ -46,7 +46,8 @@ function GroupsView({user}) {
 
     function onSelect(event) {
         let group = event.target.value;
-        if (group != "---") {
+        console.log(group)
+        if (group != -1) {
             window.location.href = `/notebook/${group}`;
         }
     }
@@ -54,7 +55,7 @@ function GroupsView({user}) {
     return <div id="groupsView" className="container card m-auto w-75 w-sm-25 py-4" style={{marginTop: '40px'}}>
                 <h2>Select a Group</h2>
                 <select className="groupSelect" onChange={onSelect}>
-                    <option value="---"></option>
+                    <option value="-1"></option>
                     {
                         groupsList.map((item, i) => <GroupItem key={i} id={item.groupId} name={item.name}/>)
                     }
