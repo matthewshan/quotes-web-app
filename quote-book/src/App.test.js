@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import NavBar from './Nav/NavBar.jsx'
-import QuoteCard from './'
+import QuoteCard from './Quotes/QuoteCard.jsx'
 
 
 test('NavBar Email', () => {
@@ -11,8 +11,8 @@ test('NavBar Email', () => {
   expect(linkElement).toBeInTheDocument();
 });
 
-// test('QuoteCard test', () => {
-//   const { getByText } = render(<QuoteCard quote={"This is my quote"} person={"This person"} />)
-//   getByText("This is my Quote")
-//   getByText("~This person")
-// })
+test('QuoteCard test', () => {
+  const { getByText } = render(<QuoteCard quote={{quote: "This is my quote", person: "This person"}} />)
+  getByText("This is my quote")
+  getByText("~This person")
+})
