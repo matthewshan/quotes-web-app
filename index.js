@@ -25,6 +25,7 @@ if(process.env.IS_DEV) {
     app.use(cors({
         origin: 'http://localhost:3000'
     }));
+
 }
 
 
@@ -54,12 +55,11 @@ const apiCall = (req, res, next) => {
         console.log("User id not found...")
         getUser(req.session.discord_id, req.session.email).then((data) => {
             req.session.userId = data.id
-
-        })
-        next();
+        });
     }
-    else if(!isValid(req.get('referer'))) {
-        res.send(401,"Access Denied From");
+    if(!isValid(req.get('referer'))) {
+        console.log(req.get('referer'))
+        res.send(401,"Access Denied");
     }
     else {
         next();
@@ -84,7 +84,6 @@ const redirectHome = (req, res, next) => {
         next();
     }
 }
-
 
 /***
  * DISCORD API CALLS
@@ -435,8 +434,9 @@ app.get('/*', redirectLogin, (req,res) =>{
 });
 
 const port = process.env.PORT || 5000;
-app.listen(port);
+var server = app.listen(port);
 console.log('App is listening on port ' + port);
+module.exports = server
 
 
 ///var id = crypto.randomBytes(20).toString('hex');
