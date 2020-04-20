@@ -31,6 +31,9 @@ function App() {
         <Route exact path="/">
           <Nav user={user}/>
           <GroupsView />
+          <footer className="" style={{position: 'absolute', bottom: '0', margin: '12px', fontSize: '12px'}}>
+                © 2020 Copyright: Matthew Shan | <a href="https://custardquotesapi.azurewebsites.net/">API Documentation</a>
+          </footer>
         </Route>
         <Route path="/notebook/:groupId"> 
           <Nav user={user}/>

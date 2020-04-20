@@ -69,9 +69,7 @@ function GroupsView({user}) {
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
-                <footer className="" style="position: absolute; bottom: 0; margin: 12px; font-size: 10px;">
-                © 2020 Copyright: Matthew Shan | <a href="https://custardquotesapi.azurewebsites.net/">API Documentation</a>
-                </footer>
+
             </div>
 }
 
