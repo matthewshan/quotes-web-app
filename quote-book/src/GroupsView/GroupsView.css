@@ -27,5 +27,6 @@ a:hover#newGroup {
     div#groupsView {
         width: 90%;
         padding: 0 3rem;
+        margin-top: 1rem!important;
     }
 }
